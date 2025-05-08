@@ -1,13 +1,10 @@
-﻿using TalkingTails.Repository.Entities;
-
-namespace TalkingTails.API.Models.Authentication
+﻿namespace TalkingTails.API.Models.Authentication
 {
-    public class AuthResponse(string accessToken, DateTime accessTokenExpiration , ApplicationUser user, IList<string> roles)
+    public class AuthResponse
     {
-        public string Id { get; set; } = user.Id;
-        public string? UserName { get; set; } = user.UserName;
-        public string AccessToken { get; set; } = accessToken;
-        public DateTime AccessTokenExpiration { get; set; } = accessTokenExpiration;
-        public IList<string> Roles { get; set; } = roles;
+        public required string Id { get; set; }
+        public required string UserName { get; set; }
+        public required string AccessToken { get; set; }
+        public required IList<string> Roles { get; set; }
     }
 }

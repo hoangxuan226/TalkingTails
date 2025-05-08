@@ -32,22 +32,19 @@ namespace TalkingTails.Business.Services
             var result = await userManager.CreateAsync(user, password);
             if (!result.Succeeded)
             {
-                var errorDictionary = new Dictionary<string, string[]>();
-                foreach (var error in result.Errors)
-                {
-                    if (!error.Code.Equals("DuplicateUserName"))
-                    {
-                        errorDictionary[error.Code] = [error.Description];
-                    }
-                }
-                return new InvalidRegistrationError { Errors = errorDictionary };
+                return new InvalidRegistrationError(result.Errors);
             }
 
             var role = nameof(Roles.Customer);
             await userManager.AddToRoleAsync(user, role);
             var refreshToken = await GenerateAndStoreRefreshToken(user);
-            var (accessToken, accessTokenExpiration) = GenerateJwtToken(user);
-            return new AuthDto(accessToken, accessTokenExpiration, refreshToken, user, [role]);
+            return new AuthDto
+            {
+                AccessToken = GenerateJwtToken(user),
+                RefreshToken = refreshToken,
+                User = user,
+                Roles = [role]
+            };
         }
 
         public async Task<OneOf<AuthDto, IError>> LoginAsync(
@@ -73,8 +70,13 @@ namespace TalkingTails.Business.Services
 
             var roles = await userManager.GetRolesAsync(user);
             var refreshToken = await GenerateAndStoreRefreshToken(user);
-            var (accessToken, accessTokenExpiration) = GenerateJwtToken(user);
-            return new AuthDto(accessToken, accessTokenExpiration, refreshToken, user, roles);
+            return new AuthDto
+            {
+                AccessToken = GenerateJwtToken(user),
+                RefreshToken = refreshToken,
+                User = user,
+                Roles = roles
+            };
         }
 
         public async Task<OneOf<AuthDto, IError>> RefreshTokenAsync(string refreshToken)
@@ -99,8 +101,13 @@ namespace TalkingTails.Business.Services
             var newRefreshToken = await GenerateAndStoreRefreshToken(user);
 
             var roles = await userManager.GetRolesAsync(user);
-            var (accessToken, accessTokenExpiration) = GenerateJwtToken(user);
-            return new AuthDto(accessToken, accessTokenExpiration, newRefreshToken, user, roles);
+            return new AuthDto
+            {
+                AccessToken = GenerateJwtToken(user),
+                RefreshToken = newRefreshToken,
+                User = user,
+                Roles = roles
+            };
         }
 
         public async Task<OneOf<bool, IError>> RevokeRefreshTokenAsync(string refreshToken)
@@ -118,7 +125,7 @@ namespace TalkingTails.Business.Services
             return true;
         }
 
-        private (string, DateTime) GenerateJwtToken(ApplicationUser user)
+        private string GenerateJwtToken(ApplicationUser user)
         {
             var claims = new[]
             {
@@ -128,17 +135,16 @@ namespace TalkingTails.Business.Services
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.Value.Key));
             var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-            var expiration = dateTimeProvider.UtcNow.AddMinutes(jwtOptions.Value.AccessTokenExpireInMinutes);
 
             var token = new JwtSecurityToken(
                 issuer: jwtOptions.Value.Issuer,
                 audience: jwtOptions.Value.Audience,
                 claims: claims,
-                expires: expiration,
+                expires: dateTimeProvider.UtcNow.AddMinutes(jwtOptions.Value.AccessTokenExpireInMinutes),
                 signingCredentials: credentials
             );
 
-            return (new JwtSecurityTokenHandler().WriteToken(token), expiration);
+            return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
         private async Task<string> GenerateAndStoreRefreshToken(ApplicationUser user)

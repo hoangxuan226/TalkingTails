@@ -1,10 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using TalkingTails.API.Helpers.Mappings;
 using TalkingTails.API.Models.Authentication;
 using TalkingTails.Business.Errors;
 using TalkingTails.Business.Interfaces;
 using TalkingTails.Business.Models.Setting;
-using TalkingTails.Repository.Entities;
 
 namespace TalkingTails.API.Controllers
 {
@@ -17,13 +17,13 @@ namespace TalkingTails.API.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterRequest request)
         {
-            var user = new ApplicationUser() { UserName = request.Email, Email = request.Email };
+            var user = request.ToApplicationUser();
             var result = await authService.RegisterAsync(user, request.Password);
             return result.Match<IActionResult>(
-                success =>
+                authDto =>
                 {
-                    SetRefreshTokenCookie(success.RefreshToken); // Set refresh token in cookie
-                    return Ok(new AuthResponse(success.AccessToken, success.AccessTokenExpiration, success.User, success.Roles));
+                    SetRefreshTokenCookie(authDto.RefreshToken); // Set refresh token in cookie
+                    return Ok(authDto.ToAuthResponse());
                 },
                 Problem
             );
@@ -34,10 +34,10 @@ namespace TalkingTails.API.Controllers
         {
             var result = await authService.LoginAsync(request.Email, request.Password);
             return result.Match<IActionResult>(
-                success =>
+                authDto =>
                 {
-                    SetRefreshTokenCookie(success.RefreshToken); // Set refresh token in cookie
-                    return Ok(new AuthResponse(success.AccessToken, success.AccessTokenExpiration, success.User, success.Roles));
+                    SetRefreshTokenCookie(authDto.RefreshToken); // Set refresh token in cookie
+                    return Ok(authDto.ToAuthResponse());
                 },
                 Problem
             );
@@ -54,10 +54,10 @@ namespace TalkingTails.API.Controllers
 
             var result = await authService.RefreshTokenAsync(refreshToken);
             return result.Match<IActionResult>(
-                success =>
+                authDto =>
                 {
-                    SetRefreshTokenCookie(success.RefreshToken); // Set refresh token in cookie
-                    return Ok(new AuthResponse(success.AccessToken, success.AccessTokenExpiration, success.User, success.Roles));
+                    SetRefreshTokenCookie(authDto.RefreshToken); // Set refresh token in cookie
+                    return Ok(authDto.ToAuthResponse());
                 },
                 Problem
             );

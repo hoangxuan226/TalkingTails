@@ -2,12 +2,11 @@
 
 namespace TalkingTails.Business.Models.Authentication
 {
-    public class AuthDto(string accessToken, DateTime accessTokenExpiration, string refreshToken, ApplicationUser user, IList<string> roles)
+    public class AuthDto
     {
-        public string AccessToken { get; set; } = accessToken;
-        public DateTime AccessTokenExpiration { get; set; } = accessTokenExpiration;
-        public string RefreshToken { get; set; } = refreshToken;
-        public ApplicationUser User { get; set; } = user;
-        public IList<string> Roles { get; set; } = roles;
+        public required string AccessToken { get; set; }
+        public required string RefreshToken { get; set; }
+        public required ApplicationUser User { get; set; }
+        public required IList<string> Roles { get; set; }
     }
 }
