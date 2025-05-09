@@ -140,6 +140,8 @@ namespace TalkingTails.API
             // Seed data
             using (var scope = app.Services.CreateScope())
             {
+                var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+                await dbContext.Database.EnsureCreatedAsync();
                 var seeder = scope.ServiceProvider.GetRequiredService<DataSeeder>();
                 await seeder.SeedAsync();
             }

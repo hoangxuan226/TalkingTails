@@ -40,6 +40,7 @@ namespace TalkingTails.Repository.Repositories
                     query = query.Include(item);
                 }
             }
+
             return await query.FirstOrDefaultAsync();
         }
 
@@ -62,6 +63,7 @@ namespace TalkingTails.Repository.Repositories
                     query = query.AsNoTracking().Include(item);
                 }
             }
+
             return await query.ToListAsync();
         }
 
@@ -104,6 +106,7 @@ namespace TalkingTails.Repository.Repositories
                     query = query.Include(item);
                 }
             }
+
             return await query.FirstOrDefaultAsync();
         }
 
@@ -131,10 +134,12 @@ namespace TalkingTails.Repository.Repositories
                     query = query.Include(item);
                 }
             }
+
             if (orderBy != null)
             {
                 query = isDescending ? query.OrderByDescending(orderBy) : query.OrderBy(orderBy);
             }
+
             var itemCount = await query.CountAsync();
             var items = await query
                 .Skip((pageIndex - 1) * pageSize)
@@ -150,6 +155,21 @@ namespace TalkingTails.Repository.Repositories
             };
 
             return result;
+        }
+
+        public async Task<List<T>> NormalizedSearchAsync(string columnName, string searchTerm)
+        {
+            if (string.IsNullOrWhiteSpace(searchTerm))
+                return await DbSet.ToListAsync();
+
+            var standardizedSearch = searchTerm.Standardizing();
+            var tableName = DbContext.Model.FindEntityType(typeof(T))!.GetTableName();
+            FormattableString sql = $@"
+                SELECT * FROM ""{tableName}""
+                WHERE normalize_vietnamese(""{columnName}"") ILIKE normalize_vietnamese({standardizedSearch} || '%')";
+            return await DbSet
+                .FromSql(sql)
+                .ToListAsync();
         }
     }
 }

@@ -12,6 +12,7 @@ namespace TalkingTails.Repository.Interfaces
         Task AddRangeAsync(IEnumerable<T> entities);
         void Update(T entity);
         void Delete(T entity);
+
         Task<T?> GetFirstOrDefaultAsync(
             Expression<Func<T, bool>> predicate,
             string? includeProperties = null
@@ -25,5 +26,7 @@ namespace TalkingTails.Repository.Interfaces
             Expression<Func<T, object>>? orderBy = null,
             bool isDescending = false
         );
+
+        Task<List<T>> NormalizedSearchAsync(string columnName, string searchTerm);
     }
 }
