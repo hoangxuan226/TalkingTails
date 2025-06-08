@@ -13,10 +13,10 @@ namespace TalkingTails.Repository.Entities
         public List<RefreshToken> RefreshTokens { get; set; } = [];
         public ICollection<Pet> Pets { get; set; }
         public ICollection<AdoptionForm> AdoptionForms { get; set; }
-        public ICollection<Donation> Donations { get; set; }
+        public ICollection<Donation> Donations { get; set; } // Donations made by the customer
+        public ICollection<Donation> DonationsReceived { get; set; } // Donations received by the organization
         public ICollection<Notification> Notifications { get; set; }
         public ICollection<CertificateAward> CertificateAwards { get; set; }
         public ICollection<AdoptedPet> AdoptedPets { get; set; }
-        public ICollection<InterviewSchedule> InterviewSchedules { get; set; }
     }
 }

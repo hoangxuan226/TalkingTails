@@ -13,9 +13,9 @@ namespace TalkingTails.Repository.Entities
         public string ContactAddress { get; set; }
         public string LivingConditions { get; set; }
         public bool HasOtherPets { get; set; }
-        public string ReasonToAdopt { get; set; }
         public DateTime AvailableContactTime { get; set; }
         public FormStatus Status { get; set; }
+        public string RejectReason { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
 

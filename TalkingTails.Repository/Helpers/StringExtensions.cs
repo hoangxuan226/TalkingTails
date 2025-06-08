@@ -2,7 +2,7 @@
 
 namespace TalkingTails.Repository.Helpers
 {
-    public static class StringExtension
+    public static class StringExtensions
     {
         private static readonly string[] VietnameseSigns =
         [

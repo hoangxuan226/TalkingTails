@@ -40,7 +40,7 @@ namespace TalkingTails.Business.Services
             var refreshToken = await GenerateAndStoreRefreshToken(user);
             return new AuthDto
             {
-                AccessToken = GenerateJwtToken(user),
+                AccessToken = GenerateJwtToken(user, [role]),
                 RefreshToken = refreshToken,
                 User = user,
                 Roles = [role]
@@ -72,7 +72,7 @@ namespace TalkingTails.Business.Services
             var refreshToken = await GenerateAndStoreRefreshToken(user);
             return new AuthDto
             {
-                AccessToken = GenerateJwtToken(user),
+                AccessToken = GenerateJwtToken(user, roles),
                 RefreshToken = refreshToken,
                 User = user,
                 Roles = roles
@@ -103,7 +103,7 @@ namespace TalkingTails.Business.Services
             var roles = await userManager.GetRolesAsync(user);
             return new AuthDto
             {
-                AccessToken = GenerateJwtToken(user),
+                AccessToken = GenerateJwtToken(user, roles),
                 RefreshToken = newRefreshToken,
                 User = user,
                 Roles = roles
@@ -119,19 +119,26 @@ namespace TalkingTails.Business.Services
             {
                 return new InvalidRefreshTokenError();
             }
+
             storedToken.IsRevoked = true;
             unitOfWork.GenericRepository<RefreshToken>().Update(storedToken);
             await unitOfWork.SaveChangesAsync();
             return true;
         }
 
-        private string GenerateJwtToken(ApplicationUser user)
+        private string GenerateJwtToken(ApplicationUser user, IList<string>? roles)
         {
-            var claims = new[]
+            var claims = new List<Claim>
             {
+                new Claim(ClaimTypes.NameIdentifier, user.Id),
                 new Claim(JwtRegisteredClaimNames.Sub, user.Id),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
             };
+
+            if (roles != null)
+            {
+                claims.AddRange(roles.Select(role => new Claim(ClaimTypes.Role, role)));
+            }
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.Value.Key));
             var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);

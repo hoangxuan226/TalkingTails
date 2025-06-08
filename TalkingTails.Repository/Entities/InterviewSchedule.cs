@@ -6,7 +6,6 @@ namespace TalkingTails.Repository.Entities
     {
         public int Id { get; set; }
         public int AdoptionFormId { get; set; }
-        public string IntervieweeId { get; set; }
         public DateTime InterviewDate { get; set; }
         public InterviewScheduleStatus Status { get; set; }
         public string Notes { get; set; } = string.Empty;
@@ -14,6 +13,5 @@ namespace TalkingTails.Repository.Entities
         public DateTime UpdatedAt { get; set; }
 
         public AdoptionForm AdoptionForm { get; set; }
-        public ApplicationUser Interviewee { get; set; }
     }
 }

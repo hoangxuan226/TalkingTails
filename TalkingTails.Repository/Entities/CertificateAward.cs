@@ -6,7 +6,7 @@
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
         public string UserId { get; set; }
-        public double TotalAmount { get; set; }
+        public int TotalAmount { get; set; }
         public string CertificateUrl { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }

@@ -3,9 +3,9 @@
     public enum FormStatus
     {
         Pending,
+        Canceled,
         UnderReview,
         Approved,
         Rejected,
-        Canceled
     }
 }

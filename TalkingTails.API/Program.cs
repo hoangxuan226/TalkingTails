@@ -1,8 +1,11 @@
+using System.Reflection;
 using System.Text;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using TalkingTails.API.Helpers;
 using TalkingTails.Business;
 using TalkingTails.Business.Models.Setting;
 using TalkingTails.Repository;
@@ -19,7 +22,10 @@ namespace TalkingTails.API
 
             // Add services to the container.
 
-            builder.Services.AddControllers();
+            builder.Services.AddControllers().AddJsonOptions(options =>
+            {
+                options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+            });
 
             // Add Services and Repositories
             builder.Services.AddRepositoryServices(builder.Configuration);
@@ -119,6 +125,30 @@ namespace TalkingTails.API
                         },
                     }
                 );
+
+                // Use string representation for enums in Swagger
+                options.UseOneOfForPolymorphism();
+                options.UseAllOfForInheritance();
+                options.SelectDiscriminatorNameUsing(type => "discriminator");
+                options.SelectDiscriminatorValueUsing(type => type.Name);
+
+                // This is the key part - it configures Swagger to use enum names (strings)
+                options.SchemaFilter<SwaggerEnumSchemaFilter>();
+                options.ParameterFilter<SwaggerEnumParameterFilter>();
+
+                // using System.Reflection;
+                var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+                options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
+
+                options.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
+                {
+                    Title = "TalkingTails API",
+                    Version = "v1",
+                    Description =
+                        @"<b>Sort usage (applies to all sort fields):</b><br/>
+                        Pass column name (case-insensitive) to sort by asc, e.g. <code>CreatedAt</code>, <code>petName</code>.<br/>
+                        Add <code>desc</code> to sort by desc, e.g. <code>CreatedAt desc</code>, <code>petName desc</code>.<br/>"
+                });
             });
 
             var app = builder.Build();
@@ -140,8 +170,8 @@ namespace TalkingTails.API
             // Seed data
             using (var scope = app.Services.CreateScope())
             {
-                var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-                await dbContext.Database.EnsureCreatedAsync();
+                //var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+                //await dbContext.Database.EnsureCreatedAsync();
                 var seeder = scope.ServiceProvider.GetRequiredService<DataSeeder>();
                 await seeder.SeedAsync();
             }

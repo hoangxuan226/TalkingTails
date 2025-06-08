@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TalkingTails.Business.Interfaces;
+using TalkingTails.Repository.Constants;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -14,8 +15,8 @@ namespace TalkingTails.API.Controllers
         private const string CookieRefreshToken = "RefreshToken";
 
         [HttpGet("ping")]
-        //[Authorize(Roles = nameof(Roles.Admin))]
-        [Authorize]
+        [Authorize(Roles = nameof(Roles.Admin))]
+        //[Authorize]
         public IActionResult Ping()
         {
             var refreshToken = Request.Cookies[CookieRefreshToken];

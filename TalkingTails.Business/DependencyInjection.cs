@@ -1,6 +1,7 @@
 ﻿using Azure.Storage.Blobs;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Net.payOS;
 using TalkingTails.Business.Interfaces;
 using TalkingTails.Business.Models.Setting;
 using TalkingTails.Business.Services;
@@ -11,15 +12,36 @@ namespace TalkingTails.Business
     {
         public static IServiceCollection AddBusinessServices(this IServiceCollection services, IConfiguration config)
         {
+            // Add azure Blob Storage
             var azureConfiguration = config.GetSection(AzureStorageSettings.SectionName);
-            var azureSettings = azureConfiguration.Get<AzureStorageSettings>();
-            var connectionString = azureSettings?.ConnectionString;
-            services.AddScoped(_ => new BlobServiceClient(connectionString));
             services.Configure<AzureStorageSettings>(azureConfiguration);
+            var azureSettings = azureConfiguration.Get<AzureStorageSettings>() ??
+                                throw new Exception("Cannot find Azure environment");
+            var connectionString = azureSettings.ConnectionString;
+            services.AddScoped(_ => new BlobServiceClient(connectionString));
+
+            // Add PayOs settings
+            //var payOsConfiguration = config.GetSection(PayOsSettings.SectionName);
+            //services.Configure<PayOsSettings>(config.GetSection(PayOsSettings.SectionName));
+            var payOsSettings = config.GetSection(PayOsSettings.SectionName).Get<PayOsSettings>() ??
+                                throw new Exception("Cannot find PayOS environment");
+            var payOs = new PayOS(payOsSettings.ClientId,
+                payOsSettings.ApiKey, payOsSettings.ChecksumKey);
+            services.AddSingleton(payOs);
+
+            // Add other services
             services.Configure<JwtSettings>(config.GetSection(JwtSettings.SectionName));
             services.AddSingleton<IDateTimeProvider, DateTimeProvider>();
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IFileService, FileService>();
+            services.AddScoped<IDonationService, DonationService>();
+            services.AddScoped<IDonationPackageService, DonationPackageService>();
+            services.AddScoped<IUserService, UserService>();
+            services.AddScoped<IPetService, PetService>();
+            services.AddScoped<IBlogService, BlogService>();
+            services.AddScoped<IAdoptionFormService, AdoptionFormService>();
+            services.AddScoped<IInterviewScheduleService, InterviewScheduleService>();
+            services.AddScoped<IAdoptedPetService, AdoptedPetService>();
             return services;
         }
     }

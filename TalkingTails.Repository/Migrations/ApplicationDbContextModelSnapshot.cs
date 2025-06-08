@@ -166,9 +166,6 @@ namespace TalkingTails.Repository.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<DateTime>("AdoptionDate")
-                        .HasColumnType("timestamp with time zone");
-
                     b.Property<int>("AdoptionFormId")
                         .HasColumnType("integer");
 
@@ -177,9 +174,6 @@ namespace TalkingTails.Repository.Migrations
 
                     b.Property<int>("PetId")
                         .HasColumnType("integer");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
 
@@ -236,7 +230,7 @@ namespace TalkingTails.Repository.Migrations
                     b.Property<int>("PetId")
                         .HasColumnType("integer");
 
-                    b.Property<string>("ReasonToAdopt")
+                    b.Property<string>("RejectReason")
                         .IsRequired()
                         .HasColumnType("text");
 
@@ -343,7 +337,11 @@ namespace TalkingTails.Repository.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("Content")
+                    b.Property<string>("AuthorName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ContentUrl")
                         .IsRequired()
                         .HasColumnType("text");
 
@@ -354,7 +352,7 @@ namespace TalkingTails.Repository.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("CreatorId")
+                    b.Property<string>("ShortContent")
                         .IsRequired()
                         .HasColumnType("text");
 
@@ -381,8 +379,6 @@ namespace TalkingTails.Repository.Migrations
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("CreatorId");
 
                     b.HasIndex("Slug")
                         .IsUnique();
@@ -411,8 +407,8 @@ namespace TalkingTails.Repository.Migrations
                     b.Property<DateTime>("StartDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<double>("TotalAmount")
-                        .HasColumnType("double precision");
+                    b.Property<int>("TotalAmount")
+                        .HasColumnType("integer");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -436,20 +432,86 @@ namespace TalkingTails.Repository.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<double>("Amount")
-                        .HasColumnType("double precision");
+                    b.Property<int>("Amount")
+                        .HasColumnType("integer");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int>("DonationPackageId")
+                    b.Property<int>("DonationLinkRequestId")
                         .HasColumnType("integer");
 
                     b.Property<string>("Message")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("TransactionStatus")
+                    b.Property<string>("OrganizationId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("PackageName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DonationLinkRequestId")
+                        .IsUnique();
+
+                    b.HasIndex("OrganizationId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Donation");
+                });
+
+            modelBuilder.Entity("TalkingTails.Repository.Entities.DonationLinkRequest", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("Amount")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("CancelUrl")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("CheckoutUrl")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<long>("OrderCode")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("OrganizationId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("PackageName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ReturnUrl")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Status")
                         .IsRequired()
                         .HasColumnType("text");
 
@@ -462,11 +524,7 @@ namespace TalkingTails.Repository.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("DonationPackageId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("Donation");
+                    b.ToTable("DonationLinkRequest");
                 });
 
             modelBuilder.Entity("TalkingTails.Repository.Entities.DonationPackage", b =>
@@ -477,8 +535,8 @@ namespace TalkingTails.Repository.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<double>("Amount")
-                        .HasColumnType("double precision");
+                    b.Property<int>("Amount")
+                        .HasColumnType("integer");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -520,10 +578,6 @@ namespace TalkingTails.Repository.Migrations
                     b.Property<DateTime>("InterviewDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("IntervieweeId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.Property<string>("Notes")
                         .IsRequired()
                         .HasColumnType("text");
@@ -538,8 +592,6 @@ namespace TalkingTails.Repository.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("AdoptionFormId");
-
-                    b.HasIndex("IntervieweeId");
 
                     b.ToTable("InterviewSchedule");
                 });
@@ -588,8 +640,9 @@ namespace TalkingTails.Repository.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("Age")
-                        .HasColumnType("integer");
+                    b.Property<string>("Age")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<string>("Breed")
                         .IsRequired()
@@ -610,11 +663,14 @@ namespace TalkingTails.Repository.Migrations
                         .IsRequired()
                         .HasColumnType("jsonb");
 
-                    b.PrimitiveCollection<string[]>("LivingEnvironmentNeeds")
+                    b.Property<DateTime?>("LastInterviewed")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("LivingEnvironmentNeeds")
                         .IsRequired()
                         .HasColumnType("jsonb");
 
-                    b.Property<string>("OwnerId")
+                    b.Property<string>("OrganizationId")
                         .IsRequired()
                         .HasColumnType("text");
 
@@ -642,7 +698,7 @@ namespace TalkingTails.Repository.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("OwnerId");
+                    b.HasIndex("OrganizationId");
 
                     b.HasIndex("Slug")
                         .IsUnique();
@@ -828,17 +884,6 @@ namespace TalkingTails.Repository.Migrations
                     b.Navigation("Organization");
                 });
 
-            modelBuilder.Entity("TalkingTails.Repository.Entities.Blog", b =>
-                {
-                    b.HasOne("TalkingTails.Repository.Entities.ApplicationUser", "Creator")
-                        .WithMany()
-                        .HasForeignKey("CreatorId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Creator");
-                });
-
             modelBuilder.Entity("TalkingTails.Repository.Entities.CertificateAward", b =>
                 {
                     b.HasOne("TalkingTails.Repository.Entities.ApplicationUser", "User")
@@ -852,9 +897,15 @@ namespace TalkingTails.Repository.Migrations
 
             modelBuilder.Entity("TalkingTails.Repository.Entities.Donation", b =>
                 {
-                    b.HasOne("TalkingTails.Repository.Entities.DonationPackage", "DonationPackage")
-                        .WithMany("Donations")
-                        .HasForeignKey("DonationPackageId")
+                    b.HasOne("TalkingTails.Repository.Entities.DonationLinkRequest", "DonationLinkRequest")
+                        .WithOne("Donation")
+                        .HasForeignKey("TalkingTails.Repository.Entities.Donation", "DonationLinkRequestId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("TalkingTails.Repository.Entities.ApplicationUser", "Organization")
+                        .WithMany("DonationsReceived")
+                        .HasForeignKey("OrganizationId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -864,7 +915,9 @@ namespace TalkingTails.Repository.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("DonationPackage");
+                    b.Navigation("DonationLinkRequest");
+
+                    b.Navigation("Organization");
 
                     b.Navigation("User");
                 });
@@ -877,15 +930,7 @@ namespace TalkingTails.Repository.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("TalkingTails.Repository.Entities.ApplicationUser", "Interviewee")
-                        .WithMany("InterviewSchedules")
-                        .HasForeignKey("IntervieweeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.Navigation("AdoptionForm");
-
-                    b.Navigation("Interviewee");
                 });
 
             modelBuilder.Entity("TalkingTails.Repository.Entities.Notification", b =>
@@ -901,13 +946,13 @@ namespace TalkingTails.Repository.Migrations
 
             modelBuilder.Entity("TalkingTails.Repository.Entities.Pet", b =>
                 {
-                    b.HasOne("TalkingTails.Repository.Entities.ApplicationUser", "Owner")
+                    b.HasOne("TalkingTails.Repository.Entities.ApplicationUser", "Organization")
                         .WithMany("Pets")
-                        .HasForeignKey("OwnerId")
+                        .HasForeignKey("OrganizationId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Owner");
+                    b.Navigation("Organization");
                 });
 
             modelBuilder.Entity("TalkingTails.Repository.Entities.PetImage", b =>
@@ -942,7 +987,7 @@ namespace TalkingTails.Repository.Migrations
 
                     b.Navigation("Donations");
 
-                    b.Navigation("InterviewSchedules");
+                    b.Navigation("DonationsReceived");
 
                     b.Navigation("Notifications");
 
@@ -951,9 +996,9 @@ namespace TalkingTails.Repository.Migrations
                     b.Navigation("RefreshTokens");
                 });
 
-            modelBuilder.Entity("TalkingTails.Repository.Entities.DonationPackage", b =>
+            modelBuilder.Entity("TalkingTails.Repository.Entities.DonationLinkRequest", b =>
                 {
-                    b.Navigation("Donations");
+                    b.Navigation("Donation");
                 });
 
             modelBuilder.Entity("TalkingTails.Repository.Entities.Pet", b =>
