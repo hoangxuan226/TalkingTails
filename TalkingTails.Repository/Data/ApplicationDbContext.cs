@@ -27,10 +27,13 @@ namespace TalkingTails.Repository.Data
 
             #endregion
 
-            #region Configure OrganizationDetails as owned type of ApplicationUser
+            #region Configure additional fields for ApplicationUser
 
             builder.Entity<ApplicationUser>()
                 .OwnsOne(u => u.Organization, _ => { }).Navigation(o => o.Organization).IsRequired(false);
+
+            builder.Entity<ApplicationUser>()
+                .OwnsOne(u => u.Customer, _ => { }).Navigation(o => o.Customer).IsRequired(false);
 
             builder.Entity<Donation>()
                 .HasOne(d => d.User)

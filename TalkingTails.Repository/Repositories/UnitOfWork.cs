@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore.Storage;
 using TalkingTails.Repository.Data;
+using TalkingTails.Repository.Entities;
 using TalkingTails.Repository.Interfaces;
 
 namespace TalkingTails.Repository.Repositories
@@ -17,9 +18,18 @@ namespace TalkingTails.Repository.Repositories
                 return (IGenericRepository<T>)repository;
             }
 
-            var newRepository = new GenericRepository<T>(context);
+            object newRepository;
+            if (typeof(T) == typeof(ApplicationUser))
+            {
+                newRepository = new ApplicationUserRepository(context);
+            }
+            else
+            {
+                newRepository = new GenericRepository<T>(context);
+            }
+
             _repositories.Add(typeof(T), newRepository);
-            return newRepository;
+            return (IGenericRepository<T>)newRepository;
         }
 
         public async Task<int> SaveChangesAsync()

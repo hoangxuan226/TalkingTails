@@ -18,5 +18,30 @@ namespace TalkingTails.API.Helpers.Mappings
                 CancelUrl = request.CancelUrl
             };
         }
+
+        public static CustomerDonationListRequestDto ToCustomerDonationListRequestDto(
+            this CustomerDonationListRequest request, string userId)
+        {
+            return new CustomerDonationListRequestDto
+            {
+                UserId = userId,
+                PageIndex = request.PageIndex,
+                PageSize = request.PageSize
+            };
+        }
+
+        public static AdminDonationListRequestDto ToAdminDonationListRequestDto(
+            this AdminDonationListRequest request)
+        {
+            return new AdminDonationListRequestDto
+            {
+                PageIndex = request.PageIndex,
+                PageSize = request.PageSize,
+                FilterByStartDate = request.FilterByStartDate,
+                FilterByEndDate = request.FilterByEndDate,
+                SearchByPackageName = request.SearchByPackageName,
+                Sort = request.Sort
+            };
+        }
     }
 }

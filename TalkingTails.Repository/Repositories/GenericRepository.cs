@@ -7,6 +7,10 @@ using TalkingTails.Repository.Interfaces;
 
 namespace TalkingTails.Repository.Repositories
 {
+    /// <summary>
+    ///     All getter methods use GetQueryable() to allow child classes to override the initial query.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     public class GenericRepository<T> : IGenericRepository<T>
         where T : class
     {
@@ -19,7 +23,7 @@ namespace TalkingTails.Repository.Repositories
             DbSet = DbContext.Set<T>();
         }
 
-        public IQueryable<T> GetQueryable()
+        public virtual IQueryable<T> GetQueryable()
         {
             return DbSet.AsQueryable();
         }
@@ -27,12 +31,12 @@ namespace TalkingTails.Repository.Repositories
         public Task<T?> GetAsync(Expression<Func<T, bool>> filter,
             string? includeProperties = null)
         {
-            return DbSet.Where(filter).ApplyIncludes(includeProperties).FirstOrDefaultAsync();
+            return GetQueryable().Where(filter).ApplyIncludes(includeProperties).FirstOrDefaultAsync();
         }
 
         public Task<TTarget?> GetAsync<TTarget>(Expression<Func<T, bool>> filter) where TTarget : class
         {
-            return DbSet.Where(filter).SelectTo<T, TTarget>()
+            return GetQueryable().Where(filter).SelectTo<T, TTarget>()
                 .FirstOrDefaultAsync();
         }
 
@@ -41,7 +45,7 @@ namespace TalkingTails.Repository.Repositories
             string? includeProperties = null
         )
         {
-            var query = DbSet.AsQueryable();
+            var query = GetQueryable();
             if (filter != null)
                 query = query.Where(filter);
             query = query.ApplyIncludes(includeProperties);
@@ -52,7 +56,7 @@ namespace TalkingTails.Repository.Repositories
         public Task<List<TTarget>> GetAllAsync<TTarget>(Expression<Func<T, bool>>? filter = null, string? sort = null)
             where TTarget : class
         {
-            var query = DbSet.AsQueryable();
+            var query = GetQueryable();
             if (filter != null)
                 query = query.Where(filter);
 
@@ -61,7 +65,7 @@ namespace TalkingTails.Repository.Repositories
 
         public Task<bool> AnyAsync(Expression<Func<T, bool>> predicate)
         {
-            return DbSet.AnyAsync(predicate);
+            return GetQueryable().AnyAsync(predicate);
         }
 
         public async Task InsertAsync(T entity)
@@ -96,7 +100,7 @@ namespace TalkingTails.Repository.Repositories
             string? includeProperties = null
         )
         {
-            return DbSet.Where(predicate).ApplyIncludes(includeProperties).FirstOrDefaultAsync();
+            return GetQueryable().Where(predicate).ApplyIncludes(includeProperties).FirstOrDefaultAsync();
         }
 
         public Task<Pagination<T>> GetPaginationAsync(
@@ -108,7 +112,7 @@ namespace TalkingTails.Repository.Repositories
             string? sort = null
         )
         {
-            var query = DbSet.AsQueryable();
+            var query = GetQueryable();
             if (predicate != null)
                 query = query.Where(predicate);
             return query
@@ -126,7 +130,7 @@ namespace TalkingTails.Repository.Repositories
             string? sort = null
         ) where TTarget : class
         {
-            var query = DbSet.AsQueryable();
+            var query = GetQueryable();
             if (predicate != null)
                 query = query.Where(predicate);
             return query

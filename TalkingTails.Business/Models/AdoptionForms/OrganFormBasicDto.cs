@@ -12,7 +12,9 @@ namespace TalkingTails.Business.Models.AdoptionForms
         public required PetSpecies Species { get; set; }
         public required string FullName { get; set; }
         public required string ContactPhone { get; set; }
+        public required DateTime AvailableContactTime { get; set; }
         public required DateTime CreatedAt { get; set; }
+        public FormStatus Status { get; set; }
 
         public static Dictionary<string, Expression<Func<AdoptionForm, object>>> Mappings { get; } = new()
         {

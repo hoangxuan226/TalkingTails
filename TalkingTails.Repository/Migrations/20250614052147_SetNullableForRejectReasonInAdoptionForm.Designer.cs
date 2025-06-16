@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using TalkingTails.Repository.Data;
@@ -11,9 +12,11 @@ using TalkingTails.Repository.Data;
 namespace TalkingTails.Repository.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250614052147_SetNullableForRejectReasonInAdoptionForm")]
+    partial class SetNullableForRejectReasonInAdoptionForm
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -859,22 +862,6 @@ namespace TalkingTails.Repository.Migrations
 
             modelBuilder.Entity("TalkingTails.Repository.Entities.ApplicationUser", b =>
                 {
-                    b.OwnsOne("TalkingTails.Repository.Entities.CustomerDetails", "Customer", b1 =>
-                        {
-                            b1.Property<string>("ApplicationUserId")
-                                .HasColumnType("text");
-
-                            b1.Property<long>("TotalDonatedAmount")
-                                .HasColumnType("bigint");
-
-                            b1.HasKey("ApplicationUserId");
-
-                            b1.ToTable("AspNetUsers");
-
-                            b1.WithOwner()
-                                .HasForeignKey("ApplicationUserId");
-                        });
-
                     b.OwnsOne("TalkingTails.Repository.Entities.OrganizationDetails", "Organization", b1 =>
                         {
                             b1.Property<string>("ApplicationUserId")
@@ -888,9 +875,6 @@ namespace TalkingTails.Repository.Migrations
                                 .IsRequired()
                                 .HasColumnType("text");
 
-                            b1.Property<long>("TotalDonationAmount")
-                                .HasColumnType("bigint");
-
                             b1.HasKey("ApplicationUserId");
 
                             b1.ToTable("AspNetUsers");
@@ -898,8 +882,6 @@ namespace TalkingTails.Repository.Migrations
                             b1.WithOwner()
                                 .HasForeignKey("ApplicationUserId");
                         });
-
-                    b.Navigation("Customer");
 
                     b.Navigation("Organization");
                 });

@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using System.Linq.Expressions;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Net.payOS;
 using Net.payOS.Types;
@@ -8,6 +10,7 @@ using TalkingTails.Business.Interfaces;
 using TalkingTails.Business.Models.Donations;
 using TalkingTails.Repository.Constants;
 using TalkingTails.Repository.Entities;
+using TalkingTails.Repository.Helpers;
 using TalkingTails.Repository.Interfaces;
 
 namespace TalkingTails.Business.Services
@@ -147,6 +150,7 @@ namespace TalkingTails.Business.Services
                 {
                     if (data.code.Equals("00"))
                     {
+                        // Save successful donation
                         var donation = new Donation
                         {
                             Amount = donationLinkRequest.Amount,
@@ -160,6 +164,22 @@ namespace TalkingTails.Business.Services
                         await unitOfWork.GenericRepository<Donation>()
                             .InsertAsync(donation);
                         donationLinkRequest.Status = PayOsStatusPaid;
+
+                        // Increase organization's donation amount
+                        var organization = await userManager.FindByIdAsync(donationLinkRequest.OrganizationId);
+                        if (organization != null)
+                        {
+                            organization.Organization.TotalDonationAmount += donation.Amount;
+                            await userManager.UpdateAsync(organization);
+                        }
+
+                        // Increase donor's donation amount
+                        var donor = await userManager.FindByIdAsync(donationLinkRequest.UserId);
+                        if (donor != null)
+                        {
+                            donor.Customer.TotalDonatedAmount += donation.Amount;
+                            await userManager.UpdateAsync(donor);
+                        }
                     }
                     else
                     {
@@ -180,6 +200,68 @@ namespace TalkingTails.Business.Services
             }
 
             return false;
+        }
+
+        public Task<List<TopDonorsDto>> GetTopDonorsAsync(int count)
+        {
+            count = Math.Max(count, 0);
+            return unitOfWork.GenericRepository<ApplicationUser>().GetQueryable()
+                .Where(u => u.Customer.TotalDonatedAmount > 0)
+                .OrderByDescending(u => u.Customer.TotalDonatedAmount)
+                .Take(count)
+                .Select(u => new TopDonorsDto
+                {
+                    Name = u.Name ?? u.UserName ?? u.Email ?? string.Empty,
+                    ProfileImage = u.ProfileImage,
+                    TotalDonatedAmount = u.Customer.TotalDonatedAmount
+                })
+                .ToListAsync();
+        }
+
+        public Task<Pagination<CustomerDonationBasicDto>> GetCustomerDonationHistoryAsync(
+            CustomerDonationListRequestDto requestDto)
+        {
+            var pageIndex = requestDto.PageIndex ?? 1;
+            var pageSize = requestDto.PageSize ?? 5;
+            Expression<Func<Donation, bool>> filter = d => d.UserId == requestDto.UserId;
+            var sort = $"{nameof(Donation.CreatedAt)} desc";
+            return unitOfWork.GenericRepository<Donation>()
+                .GetPaginationAsync<CustomerDonationBasicDto>(pageIndex, pageSize, null, filter, sort);
+        }
+
+        public Task<Pagination<AdminDonationBasicDto>> GetAdminDonationHistoryAsync(
+            AdminDonationListRequestDto requestDto)
+        {
+            var pageIndex = requestDto.PageIndex ?? 1;
+            var pageSize = requestDto.PageSize ?? 5;
+            var sort = requestDto.Sort ?? $"{nameof(Donation.CreatedAt)} desc";
+            Expression<Func<Donation, bool>> filter = d =>
+                (requestDto.FilterByStartDate == null || d.CreatedAt >= requestDto.FilterByStartDate)
+                && (requestDto.FilterByEndDate == null || d.CreatedAt <= requestDto.FilterByEndDate)
+                && (requestDto.SearchByPackageName == null || d.PackageName.Contains(requestDto.SearchByPackageName));
+            return unitOfWork.GenericRepository<Donation>()
+                .GetPaginationAsync<AdminDonationBasicDto>(pageIndex, pageSize, null, filter, sort);
+        }
+
+        public async Task<StatisticalDto> GetDonationStatisticsAsync(DateTime? startDate, DateTime? endDate)
+        {
+            var packageStats = await unitOfWork.GenericRepository<Donation>()
+                .GetQueryable()
+                .Where(d => (startDate == null || d.CreatedAt >= startDate) &&
+                            (endDate == null || d.CreatedAt <= endDate))
+                .GroupBy(d => d.PackageName)
+                .Select(g => new PackageStatistics
+                {
+                    PackageName = g.Key,
+                    TotalAmount = g.Sum(d => d.Amount),
+                    Count = g.Count()
+                })
+                .ToListAsync();
+
+            return new StatisticalDto
+            {
+                PackageStatistics = packageStats
+            };
         }
     }
 }

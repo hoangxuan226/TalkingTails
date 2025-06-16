@@ -9,7 +9,8 @@ namespace TalkingTails.Repository.Entities
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
         public string? ProfileImage { get; set; }
-        public OrganizationDetails Organization { get; set; }
+        public OrganizationDetails? Organization { get; set; }
+        public CustomerDetails? Customer { get; set; }
         public List<RefreshToken> RefreshTokens { get; set; } = [];
         public ICollection<Pet> Pets { get; set; }
         public ICollection<AdoptionForm> AdoptionForms { get; set; }
