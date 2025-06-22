@@ -27,7 +27,7 @@ namespace TalkingTails.API.Controllers
         }
 
         /// <summary>
-        ///     Update customer profile
+        ///     Customer: Update customer profile
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>

@@ -75,7 +75,10 @@ namespace TalkingTails.Business.Services
                 ".jpeg" => "image/jpeg",
                 ".png" => "image/png",
                 ".gif" => "image/gif",
-                _ => throw new ArgumentException("Unsupported image format.")
+                ".doc" => "application/msword",
+                ".docx" =>
+                    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                _ => throw new ArgumentException("Định dạng tập tin không được hỗ trợ.")
             };
         }
     }

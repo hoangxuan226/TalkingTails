@@ -55,6 +55,51 @@ namespace TalkingTails.API.Controllers
         }
 
         /// <summary>
+        ///     Admin: Get blog details by id
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        [HttpGet("{id:int}")]
+        [Authorize(Roles = nameof(Roles.Admin))]
+        public async Task<IActionResult> GetByIdAsync(int id)
+        {
+            var blogDetails = await blogService.GetBlogDetailsForAdminAsync(id);
+            return blogDetails == null ? Problem(new NotFoundError()) : Ok(blogDetails);
+        }
+
+        /// <summary>
+        ///     Admin: Create a new blog
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpPost]
+        [Authorize(Roles = nameof(Roles.Admin))]
+        public async Task<IActionResult> CreateAsync(CreateBlogRequest request)
+        {
+            var requestDto = request.ToCreateBlogRequestDto();
+            var result = await blogService.CreateBlogAsync(requestDto);
+            return result.Match<IActionResult>(
+                _ => Ok(new { Message = "Tạo blog thành công." }),
+                Problem);
+        }
+
+        /// <summary>
+        ///     Admin: Update an existing blog
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpPut]
+        [Authorize(Roles = nameof(Roles.Admin))]
+        public async Task<IActionResult> UpdateAsync(UpdateBlogRequest request)
+        {
+            var requestDto = request.ToUpdateBlogRequestDto();
+            var result = await blogService.UpdateBlogAsync(requestDto);
+            return result.Match<IActionResult>(
+                _ => Ok(new { Message = "Cập nhật blog thành công." }),
+                Problem);
+        }
+
+        /// <summary>
         ///     Get comments by blog id
         /// </summary>
         /// <param name="id"></param>
@@ -102,6 +147,38 @@ namespace TalkingTails.API.Controllers
 
             var result = await blogService.PlusViewCount(id, increment);
             return result ? Ok(new { Message = "Cộng view count thành công." }) : Problem(new NotFoundError());
+        }
+
+        /// <summary>
+        ///     Admin: Get blog statistics within a specified date range.
+        /// </summary>
+        /// <param name="startDate"></param>
+        /// <param name="endDate"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("/api/admin/[controller]/statistic")]
+        [Authorize(Roles = nameof(Roles.Admin))]
+        public async Task<IActionResult> GetBlogStatisticsAsync([FromQuery] DateTime? startDate,
+            [FromQuery] DateTime? endDate)
+        {
+            var statistics = await blogService.GetBlogStatisticsAsync(startDate, endDate);
+            return Ok(statistics);
+        }
+
+        /// <summary>
+        ///     Admin: Update blog status by id.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpPatch("{id:int}/status")]
+        [Authorize(Roles = nameof(Roles.Admin))]
+        public async Task<IActionResult> UpdateBlogStatusAsync(int id, [FromBody] UpdateBlogStatusRequest request)
+        {
+            var result = await blogService.UpdateBlogStatus(id, request.Status);
+            return result
+                ? Ok(new { Message = "Cập nhật trạng thái blog thành công." })
+                : Problem(new InvalidResourcesError());
         }
     }
 }

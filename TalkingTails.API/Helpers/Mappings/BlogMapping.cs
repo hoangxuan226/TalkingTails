@@ -51,5 +51,32 @@ namespace TalkingTails.API.Helpers.Mappings
                 BlogId = blogId
             };
         }
+
+        public static CreateBlogRequestDto ToCreateBlogRequestDto(this CreateBlogRequest request)
+        {
+            return new CreateBlogRequestDto
+            {
+                CoverImage = request.CoverImage,
+                Title = request.Title,
+                ContentFile = request.ContentFile,
+                ShortContent = request.ShortContent,
+                Species = request.Species,
+                AuthorName = request.AuthorName
+            };
+        }
+
+        public static UpdateBlogRequestDto ToUpdateBlogRequestDto(this UpdateBlogRequest request)
+        {
+            return new UpdateBlogRequestDto
+            {
+                Id = request.Id,
+                CoverImage = request.CoverImage,
+                Title = request.Title,
+                ContentFile = request.ContentFile,
+                ShortContent = request.ShortContent,
+                Species = request.Species,
+                AuthorName = request.AuthorName
+            };
+        }
     }
 }
