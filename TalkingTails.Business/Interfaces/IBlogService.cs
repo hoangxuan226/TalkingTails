@@ -7,5 +7,7 @@ namespace TalkingTails.Business.Interfaces
     {
         Task<Pagination<GuestBlogBasicDto>> GetBlogsForGuestAsync(BlogListRequestDto requestDto);
         Task<Pagination<AdminBlogBasicDto>> GetBlogsForAdminAsync(BlogListRequestDto requestDto);
+        Task<GuestBlogDetailDto?> GetBlogDetailsForGuestAsync(string slug);
+        Task<bool> PlusViewCount(int blogId, int increment);
     }
 }

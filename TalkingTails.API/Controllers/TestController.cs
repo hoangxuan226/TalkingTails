@@ -1,7 +1,7 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TalkingTails.Business.Interfaces;
-using TalkingTails.Repository.Constants;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -15,12 +15,19 @@ namespace TalkingTails.API.Controllers
         private const string CookieRefreshToken = "RefreshToken";
 
         [HttpGet("ping")]
-        [Authorize(Roles = nameof(Roles.Admin))]
+        [Authorize]
         //[Authorize]
         public IActionResult Ping()
         {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "";
+            var roles = User.FindAll(ClaimTypes.Role).Select(claim => claim.Value).ToList();
             var refreshToken = Request.Cookies[CookieRefreshToken];
-            return Ok("Pong");
+            return Ok(new
+            {
+                UserId = userId,
+                Roles = roles,
+                RefreshToken = refreshToken
+            });
         }
 
         [HttpPost("upload-image")]

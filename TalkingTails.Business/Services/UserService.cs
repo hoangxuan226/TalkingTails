@@ -1,13 +1,21 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using System.Security.Claims;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using OneOf;
 using TalkingTails.Business.Errors;
 using TalkingTails.Business.Interfaces;
+using TalkingTails.Business.Models.Organizations;
+using TalkingTails.Business.Models.Users;
+using TalkingTails.Repository.Constants;
 using TalkingTails.Repository.Entities;
+using TalkingTails.Repository.Interfaces;
 
 namespace TalkingTails.Business.Services
 {
-    public class UserService(UserManager<ApplicationUser> userManager) : IUserService
+    public class UserService(
+        UserManager<ApplicationUser> userManager,
+        IUnitOfWork unitOfWork,
+        IDateTimeProvider dateTimeProvider) : IUserService
     {
         public async Task<OneOf<ApplicationUser, IError>> CreateAsync(ApplicationUser user, string password,
             IList<string> roles)
@@ -15,7 +23,7 @@ namespace TalkingTails.Business.Services
             var result = await userManager.CreateAsync(user, password);
             if (!result.Succeeded)
             {
-                return new InvalidRegistrationError(result.Errors);
+                return new InvalidIdentityError(result.Errors);
             }
 
             if (!roles.IsNullOrEmpty())
@@ -23,11 +31,78 @@ namespace TalkingTails.Business.Services
                 var roleResult = await userManager.AddToRolesAsync(user, roles);
                 if (!roleResult.Succeeded)
                 {
-                    return new InvalidRegistrationError(roleResult.Errors);
+                    return new InvalidIdentityError(roleResult.Errors);
                 }
             }
 
             return user;
+        }
+
+        public async Task<dynamic?> GetAccountDetailsAsync(ClaimsPrincipal user)
+        {
+            var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "";
+            var roles = user.FindAll(ClaimTypes.Role).Select(claim => claim.Value).ToList();
+            if (roles.Contains(nameof(Roles.Organization)))
+            {
+                var organization = await unitOfWork.GenericRepository<ApplicationUser>()
+                    .GetAsync<OrganizationDetailsDto>(u => u.Id.Equals(userId));
+                return organization;
+            }
+
+            if (roles.Contains(nameof(Roles.Customer)))
+            {
+                var customer = await unitOfWork.GenericRepository<ApplicationUser>()
+                    .GetAsync<CustomerDetailsDto>(u => u.Id.Equals(userId));
+                return customer;
+            }
+
+            return null;
+        }
+
+        public async Task<OneOf<bool, IError>> UpdateAsync(EditCustomerRequestDto requestDto)
+        {
+            var user = await userManager.FindByIdAsync(requestDto.Id);
+            if (user == null)
+            {
+                return new NotFoundError();
+            }
+
+            if (user.Email != requestDto.Email)
+            {
+                var updateEmailRs = await userManager.SetEmailAsync(user, requestDto.Email);
+                if (!updateEmailRs.Succeeded)
+                {
+                    return new InvalidIdentityError(updateEmailRs.Errors);
+                }
+            }
+
+            try
+            {
+                user.Address = requestDto.Address ?? user.Address;
+                user.PhoneNumber = requestDto.PhoneNumber ?? user.PhoneNumber;
+                user.Birthday = requestDto.Birthday ?? user.Birthday;
+                user.Name = requestDto.Name;
+                user.UpdatedAt = dateTimeProvider.UtcNow;
+                var result = await userManager.UpdateAsync(user);
+                if (!result.Succeeded)
+                {
+                    return new InvalidIdentityError(result.Errors);
+                }
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                return new Error
+                {
+                    StatusCode = System.Net.HttpStatusCode.InternalServerError,
+                    Detail = "Đã xảy ra lỗi khi cập nhật hồ sơ.",
+                    Errors = new Dictionary<string, string[]>
+                    {
+                        { "Exception", [ex.Message] }
+                    }
+                };
+            }
         }
     }
 }

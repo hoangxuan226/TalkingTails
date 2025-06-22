@@ -13,5 +13,6 @@ namespace TalkingTails.API.Models.Blogs
         public PetSpecies? FilterBySpecies { get; set; }
 
         public string? SearchByTitle { get; set; }
+        public string? Sort { get; set; }
     }
 }

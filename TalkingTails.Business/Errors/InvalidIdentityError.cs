@@ -3,14 +3,15 @@ using Microsoft.AspNetCore.Identity;
 
 namespace TalkingTails.Business.Errors
 {
-    public class InvalidRegistrationError : IError
+    public class InvalidIdentityError : IError
     {
         public HttpStatusCode StatusCode => HttpStatusCode.UnprocessableEntity;
         public string Detail { get; set; } = "Thông tin không hợp lệ";
+
         public IDictionary<string, string[]> Errors { get; set; } =
             new Dictionary<string, string[]>();
 
-        public InvalidRegistrationError(IEnumerable<IdentityError> errors)
+        public InvalidIdentityError(IEnumerable<IdentityError> errors)
         {
             foreach (var error in errors)
             {
@@ -19,7 +20,7 @@ namespace TalkingTails.Business.Errors
                 {
                     error.Description = "Email này đã có người sử dụng";
                 }
-                
+
                 Errors[error.Code] = [error.Description];
             }
         }

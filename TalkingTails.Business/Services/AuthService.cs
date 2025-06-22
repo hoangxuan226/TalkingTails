@@ -29,10 +29,11 @@ namespace TalkingTails.Business.Services
             string password
         )
         {
+            user.CreatedAt = dateTimeProvider.UtcNow;
             var result = await userManager.CreateAsync(user, password);
             if (!result.Succeeded)
             {
-                return new InvalidRegistrationError(result.Errors);
+                return new InvalidIdentityError(result.Errors);
             }
 
             var role = nameof(Roles.Customer);

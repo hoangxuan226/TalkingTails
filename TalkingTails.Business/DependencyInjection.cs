@@ -43,6 +43,8 @@ namespace TalkingTails.Business
             services.AddScoped<IInterviewScheduleService, InterviewScheduleService>();
             services.AddScoped<IAdoptedPetService, AdoptedPetService>();
             services.AddScoped<IOrganizationService, OrganizationService>();
+            services.AddScoped<IBlogCommentService, BlogCommentService>();
+            services.AddScoped<IUserService, UserService>();
             return services;
         }
     }

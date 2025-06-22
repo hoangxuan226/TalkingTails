@@ -21,7 +21,7 @@ namespace TalkingTails.Business.Services
                 && p.Status.Equals(BlogStatus.Active);
             return await unitOfWork.GenericRepository<Blog>()
                 .GetPaginationAsync<GuestBlogBasicDto>(pageIndex, pageSize,
-                    vietnameseSearch, filter);
+                    vietnameseSearch, filter, requestDto.Sort);
         }
 
         public async Task<Pagination<AdminBlogBasicDto>> GetBlogsForAdminAsync(BlogListRequestDto requestDto)
@@ -35,6 +35,19 @@ namespace TalkingTails.Business.Services
             return await unitOfWork.GenericRepository<Blog>()
                 .GetPaginationAsync<AdminBlogBasicDto>(pageIndex, pageSize,
                     vietnameseSearch, filter, requestDto.Sort);
+        }
+
+        public Task<GuestBlogDetailDto?> GetBlogDetailsForGuestAsync(string slug)
+        {
+            return unitOfWork.GenericRepository<Blog>()
+                .GetAsync<GuestBlogDetailDto>(p => p.Slug.Equals(slug) && p.Status.Equals(BlogStatus.Active));
+        }
+
+        public async Task<bool> PlusViewCount(int blogId, int increment)
+        {
+            var result = await unitOfWork.GenericRepository<Blog>().ExecuteUpdateAsync(b => b.Id == blogId,
+                update => update.SetProperty(b => b.ViewCount, b => b.ViewCount + increment));
+            return result > 0;
         }
     }
 }

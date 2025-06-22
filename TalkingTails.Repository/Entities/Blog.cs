@@ -16,5 +16,6 @@ namespace TalkingTails.Repository.Entities
         public DateTime UpdatedAt { get; set; }
         public BlogStatus Status { get; set; }
         public int ViewCount { get; set; }
+        public ICollection<BlogComment> BlogComments { get; set; }
     }
 }
