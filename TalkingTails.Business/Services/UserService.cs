@@ -1,6 +1,6 @@
-﻿using System.Security.Claims;
+﻿using System.Linq.Expressions;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.IdentityModel.Tokens;
 using OneOf;
 using TalkingTails.Business.Errors;
 using TalkingTails.Business.Interfaces;
@@ -8,6 +8,7 @@ using TalkingTails.Business.Models.Organizations;
 using TalkingTails.Business.Models.Users;
 using TalkingTails.Repository.Constants;
 using TalkingTails.Repository.Entities;
+using TalkingTails.Repository.Helpers;
 using TalkingTails.Repository.Interfaces;
 
 namespace TalkingTails.Business.Services
@@ -17,27 +18,6 @@ namespace TalkingTails.Business.Services
         IUnitOfWork unitOfWork,
         IDateTimeProvider dateTimeProvider) : IUserService
     {
-        public async Task<OneOf<ApplicationUser, IError>> CreateAsync(ApplicationUser user, string password,
-            IList<string> roles)
-        {
-            var result = await userManager.CreateAsync(user, password);
-            if (!result.Succeeded)
-            {
-                return new InvalidIdentityError(result.Errors);
-            }
-
-            if (!roles.IsNullOrEmpty())
-            {
-                var roleResult = await userManager.AddToRolesAsync(user, roles);
-                if (!roleResult.Succeeded)
-                {
-                    return new InvalidIdentityError(roleResult.Errors);
-                }
-            }
-
-            return user;
-        }
-
         public async Task<dynamic?> GetAccountDetailsAsync(ClaimsPrincipal user)
         {
             var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "";
@@ -67,6 +47,7 @@ namespace TalkingTails.Business.Services
                 return new NotFoundError();
             }
 
+            // Update email by SetEmailAsync to ensure email validation and uniqueness
             if (user.Email != requestDto.Email)
             {
                 var updateEmailRs = await userManager.SetEmailAsync(user, requestDto.Email);
@@ -81,6 +62,7 @@ namespace TalkingTails.Business.Services
                 user.Address = requestDto.Address ?? user.Address;
                 user.PhoneNumber = requestDto.PhoneNumber ?? user.PhoneNumber;
                 user.Birthday = requestDto.Birthday ?? user.Birthday;
+                user.UserName = requestDto.Email;
                 user.Name = requestDto.Name;
                 user.UpdatedAt = dateTimeProvider.UtcNow;
                 var result = await userManager.UpdateAsync(user);
@@ -103,6 +85,26 @@ namespace TalkingTails.Business.Services
                     }
                 };
             }
+        }
+
+        public Task<Pagination<AdminUserBasicDto>> GetAllForAdminAsync(AdminUserListRequestDto requestDto)
+        {
+            var pageIndex = requestDto.PageIndex ?? 1;
+            var pageSize = requestDto.PageSize ?? 5;
+            Expression<Func<ApplicationUser, bool>> filter = p =>
+                (requestDto.SearchByName == null || p.Name == null || p.Name.Contains(requestDto.SearchByName)) &&
+                (requestDto.SearchByEmail == null || p.Email == null || p.Email.Contains(requestDto.SearchByEmail));
+            var repository = (IApplicationUserRepository)unitOfWork.GenericRepository<ApplicationUser>();
+            repository.ApplyRole(Roles.Customer);
+            return repository.GetPaginationAsync<AdminUserBasicDto>(pageIndex, pageSize, null, filter, requestDto.Sort);
+        }
+
+        public Task<CustomerDetailsDto?> GetCustomerDetailsAsync(string userId)
+        {
+            var repository = (IApplicationUserRepository)unitOfWork.GenericRepository<ApplicationUser>();
+            repository.ApplyRole(Roles.Customer);
+            return unitOfWork.GenericRepository<ApplicationUser>()
+                .GetAsync<CustomerDetailsDto>(u => u.Id.Equals(userId));
         }
     }
 }

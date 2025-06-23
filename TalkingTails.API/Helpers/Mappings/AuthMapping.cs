@@ -22,7 +22,8 @@ namespace TalkingTails.API.Helpers.Mappings
             return new ApplicationUser
             {
                 UserName = request.Email,
-                Email = request.Email
+                Email = request.Email,
+                Name = request.Email
             };
         }
     }

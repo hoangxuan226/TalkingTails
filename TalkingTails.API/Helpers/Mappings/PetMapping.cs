@@ -45,5 +45,24 @@ namespace TalkingTails.API.Helpers.Mappings
                 SearchByName = request.SearchByName
             };
         }
+
+        //public static CreatePetRequestDto ToCreatePetRequestDto(this CreatePetRequest request,
+        //    List<PetInfoItem> information, string organizationId)
+        //{
+        //    return new CreatePetRequestDto
+        //    {
+        //        PetName = request.PetName,
+        //        Species = request.Species,
+        //        Breed = request.Breed,
+        //        Age = request.Age,
+        //        Weight = request.Weight,
+        //        Gender = request.Gender,
+        //        Description = request.Description,
+        //        LivingEnvironmentNeeds = request.LivingEnvironmentNeeds,
+        //        Information = information,
+        //        PetImages = request.PetImages,
+        //        OrganizationId = organizationId
+        //    };
+        //}
     }
 }

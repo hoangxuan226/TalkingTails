@@ -74,7 +74,7 @@ namespace TalkingTails.API.Controllers
         /// <returns></returns>
         [HttpPost]
         [Authorize(Roles = nameof(Roles.Admin))]
-        public async Task<IActionResult> CreateAsync(CreateBlogRequest request)
+        public async Task<IActionResult> CreateAsync([FromForm] CreateBlogRequest request)
         {
             var requestDto = request.ToCreateBlogRequestDto();
             var result = await blogService.CreateBlogAsync(requestDto);
@@ -90,7 +90,7 @@ namespace TalkingTails.API.Controllers
         /// <returns></returns>
         [HttpPut]
         [Authorize(Roles = nameof(Roles.Admin))]
-        public async Task<IActionResult> UpdateAsync(UpdateBlogRequest request)
+        public async Task<IActionResult> UpdateAsync([FromForm] UpdateBlogRequest request)
         {
             var requestDto = request.ToUpdateBlogRequestDto();
             var result = await blogService.UpdateBlogAsync(requestDto);

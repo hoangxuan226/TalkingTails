@@ -30,12 +30,21 @@ namespace TalkingTails.Business.Services
         )
         {
             user.CreatedAt = dateTimeProvider.UtcNow;
+            user.UpdatedAt = dateTimeProvider.UtcNow;
+            user.Customer = new CustomerDetails
+            {
+                Status = CustomerStatus.Active,
+                TotalDonatedAmount = 0
+            };
+
+            // Save the user details
             var result = await userManager.CreateAsync(user, password);
             if (!result.Succeeded)
             {
                 return new InvalidIdentityError(result.Errors);
             }
 
+            // Assign the default role to the user
             var role = nameof(Roles.Customer);
             await userManager.AddToRoleAsync(user, role);
             var refreshToken = await GenerateAndStoreRefreshToken(user);
@@ -70,6 +79,17 @@ namespace TalkingTails.Business.Services
             }
 
             var roles = await userManager.GetRolesAsync(user);
+            if (roles.Contains(nameof(Roles.Customer)) && !user.Customer!.Status.Equals(CustomerStatus.Active))
+            {
+                return new ForbiddenError { Detail = "Tài khoản này đã bị vô hiệu hoá" };
+            }
+
+            if (roles.Contains(nameof(Roles.Organization)) &&
+                !user.Organization!.Status.Equals(OrganizationStatus.Active))
+            {
+                return new ForbiddenError { Detail = "Tài khoản này đã bị vô hiệu hoá" };
+            }
+
             var refreshToken = await GenerateAndStoreRefreshToken(user);
             return new AuthDto
             {

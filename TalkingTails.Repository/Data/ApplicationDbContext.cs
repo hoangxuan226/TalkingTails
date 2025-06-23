@@ -30,10 +30,24 @@ namespace TalkingTails.Repository.Data
             #region Configure additional fields for ApplicationUser
 
             builder.Entity<ApplicationUser>()
-                .OwnsOne(u => u.Organization, _ => { }).Navigation(o => o.Organization).IsRequired(false);
+                .OwnsOne(u => u.Organization, org =>
+                {
+                    org.Property(o => o.Status)
+                        .HasConversion(
+                            v => v.ToString(),
+                            v => (OrganizationStatus)Enum.Parse(typeof(OrganizationStatus), v))
+                        .HasColumnType("text");
+                }).Navigation(o => o.Organization).IsRequired(false);
 
             builder.Entity<ApplicationUser>()
-                .OwnsOne(u => u.Customer, _ => { }).Navigation(o => o.Customer).IsRequired(false);
+                .OwnsOne(u => u.Customer, cus =>
+                {
+                    cus.Property(o => o.Status)
+                        .HasConversion(
+                            v => v.ToString(),
+                            v => (CustomerStatus)Enum.Parse(typeof(CustomerStatus), v))
+                        .HasColumnType("text");
+                }).Navigation(o => o.Customer).IsRequired(false);
 
             builder.Entity<Donation>()
                 .HasOne(d => d.User)

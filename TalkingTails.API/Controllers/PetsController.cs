@@ -29,23 +29,6 @@ namespace TalkingTails.API.Controllers
         }
 
         /// <summary>
-        ///     Organization: Get pet list for organization
-        /// </summary>
-        /// <param name="request"></param>
-        /// <returns></returns>
-        [HttpGet]
-        [Route("/api/organization/[controller]")]
-        [Authorize(Roles = nameof(Roles.Organization))]
-        public async Task<IActionResult> GetAllOfOrganizationAsync([FromQuery] OrganPetListRequest request)
-        {
-            var requestDto = request.ToListRequestDto();
-            var organizationId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            var pets =
-                await petService.GetPetsOfOrganizationAsync(requestDto, organizationId ?? string.Empty);
-            return Ok(pets);
-        }
-
-        /// <summary>
         ///     Get pet details by slug for guest
         /// </summary>
         /// <param name="slug"></param>
@@ -70,6 +53,49 @@ namespace TalkingTails.API.Controllers
             var petDetails = await petService.GetPetDetailsForOrganizationAsync(id, userId);
             return petDetails == null ? Problem(new NotFoundError()) : Ok(petDetails);
         }
+
+        /// <summary>
+        ///     Organization: Get pet list for organization
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("/api/organization/[controller]")]
+        [Authorize(Roles = nameof(Roles.Organization))]
+        public async Task<IActionResult> GetAllOfOrganizationAsync([FromQuery] OrganPetListRequest request)
+        {
+            var requestDto = request.ToListRequestDto();
+            var organizationId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var pets =
+                await petService.GetPetsOfOrganizationAsync(requestDto, organizationId ?? string.Empty);
+            return Ok(pets);
+        }
+
+        //[HttpPost]
+        //[Route("/api/organization/[controller]")]
+        //[Authorize(Roles = nameof(Roles.Organization))]
+        //public async Task<IActionResult> CreateAsync([FromForm] CreatePetRequest request)
+        //{
+        //    //var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "";
+        //    //List<PetInfoItem>? infoList;
+        //    //try
+        //    //{
+        //    //    infoList = JsonSerializer.Deserialize<List<PetInfoItem>>(request.Information);
+        //    //    if (infoList == null || !infoList.Any())
+        //    //    {
+        //    //        return Problem(new InvalidResourcesError { Detail = "Thông tin đặc điểm không hợp lệ" });
+        //    //    }
+        //    //}
+        //    //catch (Exception ex)
+        //    //{
+        //    //    return Problem(new InvalidResourcesError { Detail = "Thông tin đặc điểm không hợp lệ" });
+        //    //}
+
+        //    //var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "";
+        //    //var petDetails = await petService.CreatePetAsync(request.ToCreatePetDto(), userId);
+        //    //return CreatedAtAction(nameof(GetByIdAsync), new { id = petDetails.Id }, petDetails);
+        //    return Ok(request);
+        //}
 
         /// <summary>
         ///     Organization: Get interviewed (but not yet adopted) pet list for organization
