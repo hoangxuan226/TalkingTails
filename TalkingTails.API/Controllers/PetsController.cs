@@ -71,31 +71,59 @@ namespace TalkingTails.API.Controllers
             return Ok(pets);
         }
 
-        //[HttpPost]
-        //[Route("/api/organization/[controller]")]
-        //[Authorize(Roles = nameof(Roles.Organization))]
-        //public async Task<IActionResult> CreateAsync([FromForm] CreatePetRequest request)
-        //{
-        //    //var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "";
-        //    //List<PetInfoItem>? infoList;
-        //    //try
-        //    //{
-        //    //    infoList = JsonSerializer.Deserialize<List<PetInfoItem>>(request.Information);
-        //    //    if (infoList == null || !infoList.Any())
-        //    //    {
-        //    //        return Problem(new InvalidResourcesError { Detail = "Thông tin đặc điểm không hợp lệ" });
-        //    //    }
-        //    //}
-        //    //catch (Exception ex)
-        //    //{
-        //    //    return Problem(new InvalidResourcesError { Detail = "Thông tin đặc điểm không hợp lệ" });
-        //    //}
+        /// <summary>
+        ///     Organization: Create a new pet
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpPost]
+        [Route("/api/organization/[controller]")]
+        [Authorize(Roles = nameof(Roles.Organization))]
+        public async Task<IActionResult> CreateAsync([FromForm] CreatePetRequest request)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "";
+            var requestDto = request.ToCreatePetRequestDto(userId);
+            var result = await petService.CreatePetAsync(requestDto);
+            return result.Match<IActionResult>(
+                _ => Ok(new { Message = "Thêm vật nuôi thành công." }),
+                Problem);
+        }
 
-        //    //var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "";
-        //    //var petDetails = await petService.CreatePetAsync(request.ToCreatePetDto(), userId);
-        //    //return CreatedAtAction(nameof(GetByIdAsync), new { id = petDetails.Id }, petDetails);
-        //    return Ok(request);
-        //}
+        /// <summary>
+        ///     Organization: Update a pet
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpPut]
+        [Route("/api/organization/[controller]")]
+        [Authorize(Roles = nameof(Roles.Organization))]
+        public async Task<IActionResult> UpdateAsync([FromForm] UpdatePetRequest request)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "";
+            var requestDto = request.ToUpdatePetRequestDto(userId);
+            var result = await petService.UpdatePetAsync(requestDto);
+            return result.Match<IActionResult>(
+                _ => Ok(new { Message = "Cập nhật vật nuôi thành công." }),
+                Problem);
+        }
+
+        /// <summary>
+        ///     Organization: Update pet status
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpPatch]
+        [Route("/api/organization/[controller]/{id:int}/status")]
+        [Authorize(Roles = nameof(Roles.Organization))]
+        public async Task<IActionResult> UpdateStatusAsync(int id, [FromBody] UpdatePetStatusRequest request)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "";
+            var result = await petService.UpdatePetStatus(id, userId, request.Status);
+            return result.Match<IActionResult>(
+                _ => Ok(new { Message = "Cập nhật trạng thái thành công." }),
+                Problem);
+        }
 
         /// <summary>
         ///     Organization: Get interviewed (but not yet adopted) pet list for organization

@@ -6,8 +6,11 @@ using TalkingTails.Repository.Constants;
 
 namespace TalkingTails.API.Models.Pets
 {
-    public class CreatePetRequest
+    public class UpdatePetRequest
     {
+        [Required(ErrorMessage = "Id là bắt buộc")]
+        public int Id { get; set; }
+
         [Required(ErrorMessage = "Tên thú cưng là bắt buộc")]
         public required string PetName { get; set; }
 
@@ -37,14 +40,14 @@ namespace TalkingTails.API.Models.Pets
         public required string[] LivingEnvironmentNeeds { get; set; }
 
         [Required(ErrorMessage = "Thông tin đặc điểm là bắt buộc")]
-        public required List<PetInfo> Information { get; set; }
+        public required List<PetInfoUpdate> Information { get; set; }
 
-        [Required(ErrorMessage = "Hình ảnh thú cưng là bắt buộc")]
-        public required ICollection<IFormFile> PetImages { get; set; }
+        public List<string> ExistingImageUrls { get; set; } = [];
+        public ICollection<IFormFile> NewPetImages { get; set; } = [];
     }
 
     [ModelBinder<DtoFormBinder>]
-    public class PetInfo
+    public class PetInfoUpdate
     {
         public required string Label { get; set; }
         public bool Value { get; set; }

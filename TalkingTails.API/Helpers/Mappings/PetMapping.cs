@@ -1,5 +1,6 @@
 ﻿using TalkingTails.API.Models.Pets;
 using TalkingTails.Business.Models.Pets;
+using TalkingTails.Repository.Entities;
 
 namespace TalkingTails.API.Helpers.Mappings
 {
@@ -46,23 +47,51 @@ namespace TalkingTails.API.Helpers.Mappings
             };
         }
 
-        //public static CreatePetRequestDto ToCreatePetRequestDto(this CreatePetRequest request,
-        //    List<PetInfoItem> information, string organizationId)
-        //{
-        //    return new CreatePetRequestDto
-        //    {
-        //        PetName = request.PetName,
-        //        Species = request.Species,
-        //        Breed = request.Breed,
-        //        Age = request.Age,
-        //        Weight = request.Weight,
-        //        Gender = request.Gender,
-        //        Description = request.Description,
-        //        LivingEnvironmentNeeds = request.LivingEnvironmentNeeds,
-        //        Information = information,
-        //        PetImages = request.PetImages,
-        //        OrganizationId = organizationId
-        //    };
-        //}
+        public static CreatePetRequestDto ToCreatePetRequestDto(this CreatePetRequest request,
+            string organizationId)
+        {
+            return new CreatePetRequestDto
+            {
+                PetName = request.PetName,
+                Species = request.Species,
+                Breed = request.Breed,
+                Age = request.Age,
+                Weight = request.Weight,
+                Gender = request.Gender,
+                Description = request.Description,
+                LivingEnvironmentNeeds = request.LivingEnvironmentNeeds,
+                PetImages = request.PetImages,
+                OrganizationId = organizationId,
+                Information = request.Information.Select(info => new PetInfoItem
+                {
+                    Label = info.Label,
+                    Value = info.Value
+                }).ToList()
+            };
+        }
+
+        public static UpdatePetRequestDto ToUpdatePetRequestDto(this UpdatePetRequest request, string organizationId)
+        {
+            return new UpdatePetRequestDto
+            {
+                Id = request.Id,
+                PetName = request.PetName,
+                Species = request.Species,
+                Breed = request.Breed,
+                Age = request.Age,
+                Weight = request.Weight,
+                Gender = request.Gender,
+                Description = request.Description,
+                LivingEnvironmentNeeds = request.LivingEnvironmentNeeds,
+                ExistingImageUrls = request.ExistingImageUrls,
+                NewPetImages = request.NewPetImages,
+                OrganizationId = organizationId,
+                Information = request.Information.Select(info => new PetInfoItem
+                {
+                    Label = info.Label,
+                    Value = info.Value
+                }).ToList()
+            };
+        }
     }
 }
