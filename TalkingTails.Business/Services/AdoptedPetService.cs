@@ -1,9 +1,11 @@
-﻿using OneOf;
+﻿using System.Linq.Expressions;
+using OneOf;
 using TalkingTails.Business.Errors;
 using TalkingTails.Business.Interfaces;
 using TalkingTails.Business.Models.AdoptedPets;
 using TalkingTails.Repository.Constants;
 using TalkingTails.Repository.Entities;
+using TalkingTails.Repository.Helpers;
 using TalkingTails.Repository.Interfaces;
 
 namespace TalkingTails.Business.Services
@@ -55,6 +57,20 @@ namespace TalkingTails.Business.Services
         {
             return unitOfWork.GenericRepository<AdoptedPet>()
                 .GetAllAsync<CusAdoptedPetBasicDto>(a => a.AdopterId.Equals(userId));
+        }
+
+        public Task<Pagination<AdminAdoptedPetBasicDto>> GetAdoptedPetsForAdminAsync(
+            AdminAdoptedPetListRequestDto requestDto)
+        {
+            var pageIndex = requestDto.PageIndex ?? 1;
+            var pageSize = requestDto.PageSize ?? 5;
+            Expression<Func<AdoptedPet, bool>> filter = ap =>
+                (requestDto.FilterByStartDate == null || ap.CreatedAt >= requestDto.FilterByStartDate)
+                && (requestDto.FilterByEndDate == null || ap.CreatedAt <= requestDto.FilterByEndDate);
+            return unitOfWork.GenericRepository<AdoptedPet>()
+                .GetPaginationAsync<AdminAdoptedPetBasicDto>(pageIndex: pageIndex, pageSize: pageSize,
+                    predicate: filter,
+                    sort: requestDto.Sort);
         }
     }
 }

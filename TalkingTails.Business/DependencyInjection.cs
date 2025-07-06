@@ -45,6 +45,7 @@ namespace TalkingTails.Business
             services.AddScoped<IOrganizationService, OrganizationService>();
             services.AddScoped<IBlogCommentService, BlogCommentService>();
             services.AddScoped<IUserService, UserService>();
+            services.AddScoped<IDashboardService, DashboardService>();
             return services;
         }
     }

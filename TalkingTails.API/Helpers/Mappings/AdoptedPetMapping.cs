@@ -13,5 +13,18 @@ namespace TalkingTails.API.Helpers.Mappings
                 OrganizationId = organizationId
             };
         }
+
+        public static AdminAdoptedPetListRequestDto ToAdminAdoptedPetListRequestDto(
+            this AdminAdoptedPetListRequest request)
+        {
+            return new AdminAdoptedPetListRequestDto
+            {
+                PageIndex = request.PageIndex,
+                PageSize = request.PageSize,
+                FilterByStartDate = request.FilterByStartDate,
+                FilterByEndDate = request.FilterByEndDate,
+                Sort = request.Sort,
+            };
+        }
     }
 }

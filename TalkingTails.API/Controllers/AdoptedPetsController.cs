@@ -42,5 +42,20 @@ namespace TalkingTails.API.Controllers
             var adoptedPets = await adoptedPetService.GetAdoptedPetsByUserAsync(userId);
             return Ok(adoptedPets);
         }
+
+        /// <summary>
+        ///     Admin: Get adopted pets for admin
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("/api/admin/[controller]")]
+        [Authorize(Roles = nameof(Roles.Admin))]
+        public async Task<IActionResult> GetAdoptedPetsForAdminAsync([FromQuery] AdminAdoptedPetListRequest request)
+        {
+            var requestDto = request.ToAdminAdoptedPetListRequestDto();
+            var adoptedPets = await adoptedPetService.GetAdoptedPetsForAdminAsync(requestDto);
+            return Ok(adoptedPets);
+        }
     }
 }
