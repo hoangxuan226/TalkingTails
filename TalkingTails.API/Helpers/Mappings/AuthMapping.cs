@@ -12,6 +12,7 @@ namespace TalkingTails.API.Helpers.Mappings
             {
                 Id = authDto.User.Id,
                 UserName = authDto.User.UserName ?? "User",
+                FullName = authDto.User.Name ?? "",
                 AccessToken = authDto.AccessToken,
                 Roles = authDto.Roles
             };

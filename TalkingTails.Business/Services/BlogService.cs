@@ -89,6 +89,7 @@ namespace TalkingTails.Business.Services
             {
                 var coverImageUrl = await fileService.UploadAsync(requestDto.CoverImage);
                 var contentUrl = await fileService.UploadAsync(requestDto.ContentFile);
+                var slug = await GetSlug(requestDto.Title);
                 var blog = new Blog
                 {
                     CoverImageUrl = coverImageUrl,
@@ -97,7 +98,7 @@ namespace TalkingTails.Business.Services
                     ShortContent = requestDto.ShortContent,
                     Species = requestDto.Species,
                     AuthorName = requestDto.AuthorName,
-                    Slug = requestDto.Title.ToSlug(),
+                    Slug = slug,
                     CreatedAt = dateTimeProvider.UtcNow,
                     UpdatedAt = dateTimeProvider.UtcNow,
                     Status = BlogStatus.Active,
@@ -141,11 +142,15 @@ namespace TalkingTails.Business.Services
                     blog.ContentUrl = newContentUrl;
                 }
 
-                blog.Title = requestDto.Title;
+                if (blog.Title != requestDto.Title)
+                {
+                    blog.Title = requestDto.Title;
+                    blog.Slug = await GetSlug(requestDto.Title);
+                }
+
                 blog.ShortContent = requestDto.ShortContent;
                 blog.Species = requestDto.Species;
                 blog.AuthorName = requestDto.AuthorName;
-                blog.Slug = requestDto.Title.ToSlug();
                 blog.UpdatedAt = dateTimeProvider.UtcNow;
                 unitOfWork.GenericRepository<Blog>().Update(blog);
                 await unitOfWork.SaveChangesAsync();
@@ -170,6 +175,16 @@ namespace TalkingTails.Business.Services
             var result = await unitOfWork.GenericRepository<Blog>().ExecuteUpdateAsync(b => b.Id == id,
                 update => update.SetProperty(b => b.Status, status));
             return result > 0;
+        }
+
+        // Handle duplicate slug
+        private async Task<string> GetSlug(string name)
+        {
+            var slug = name.ToSlug();
+            var blogIdBySlug = await unitOfWork.GenericRepository<Blog>().GetQueryable()
+                .Where(b => b.Slug.Equals(slug)).Select(b => b.Id)
+                .FirstOrDefaultAsync();
+            return blogIdBySlug != 0 ? $"{slug}-{blogIdBySlug}" : slug;
         }
     }
 }
