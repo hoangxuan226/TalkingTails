@@ -11,5 +11,6 @@ namespace TalkingTails.Business.Models.InterviewSchedules
         public InterviewScheduleStatus? FilterByStatus { get; set; }
         public string? Sort { get; set; }
         public int? PetId { get; set; }
+        public required string OrganizationId { get; set; }
     }
 }

@@ -22,7 +22,9 @@ namespace TalkingTails.Business.Services
                 (requestDto.FilterByStatus == null || i.Status.Equals(requestDto.FilterByStatus))
                 && (requestDto.FilterByStartDate == null || i.InterviewDate >= requestDto.FilterByStartDate)
                 && (requestDto.FilterByEndDate == null || i.InterviewDate <= requestDto.FilterByEndDate)
-                && (requestDto.PetId == null || i.AdoptionForm.PetId == requestDto.PetId);
+                && (requestDto.PetId == null || i.AdoptionForm.PetId == requestDto.PetId)
+                && (i.AdoptionForm.Pet.OrganizationId.Equals(requestDto.OrganizationId)
+                    && (i.AdoptionForm.Pet.Status.Equals(PetStatus.Available)));
             return unitOfWork.GenericRepository<InterviewSchedule>()
                 .GetPaginationAsync<OrganInterviewBasicDto>(pageIndex, pageSize, null, filter, requestDto.Sort);
         }
@@ -42,7 +44,9 @@ namespace TalkingTails.Business.Services
                 interview.UpdatedAt = dateTimeProvider.UtcNow;
                 unitOfWork.GenericRepository<InterviewSchedule>().Update(interview);
 
-                if (!requestDto.Status.Equals(InterviewScheduleStatus.Scheduled))
+                // If the interview is completed, update the pet's last interviewed date
+                // the last interviewed date will be used in GetPetWithRecentInterviewAsync
+                if (requestDto.Status.Equals(InterviewScheduleStatus.Completed))
                 {
                     var pet = await unitOfWork.GenericRepository<Pet>()
                         .GetAsync(p => p.Id == interview.AdoptionForm.PetId);

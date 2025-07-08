@@ -5,7 +5,8 @@ namespace TalkingTails.API.Helpers.Mappings
 {
     public static class InterviewScheduleMapping
     {
-        public static InterviewListRequestDto ToInterviewListRequestDto(this InterviewListRequest requestDto)
+        public static InterviewListRequestDto ToInterviewListRequestDto(this InterviewListRequest requestDto,
+            string organizationId)
         {
             return new InterviewListRequestDto
             {
@@ -15,7 +16,8 @@ namespace TalkingTails.API.Helpers.Mappings
                 FilterByEndDate = requestDto.FilterByEndDate,
                 FilterByStatus = requestDto.FilterByStatus,
                 Sort = requestDto.Sort,
-                PetId = requestDto.PetId
+                PetId = requestDto.PetId,
+                OrganizationId = organizationId
             };
         }
 

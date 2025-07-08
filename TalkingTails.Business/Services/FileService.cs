@@ -10,7 +10,7 @@ namespace TalkingTails.Business.Services
     public class FileService(BlobServiceClient blobServiceClient, IOptions<AzureStorageSettings> azureOptions)
         : IFileService
     {
-        private const long MaxFileSize = 5 * 1024 * 1024; // 5MB in bytes
+        private const long MaxFileSize = 10 * 1024 * 1024; // 10MB in bytes
 
         public async Task<string> UploadAsync(IFormFile file)
         {

@@ -15,15 +15,30 @@ namespace TalkingTails.API.Controllers
         : ApiController
     {
         /// <summary>
-        ///     Gets all organizations.
+        ///     Gets all active organizations.
         /// </summary>
         /// <returns></returns>
         [HttpGet]
         [AllowAnonymous]
-        public async Task<IActionResult> GetAllAsync()
+        public async Task<IActionResult> GetAllForGuestAsync()
         {
-            var organizations = await organizationService.GetAllAsync();
+            var organizations = await organizationService.GetAllForGuestAsync();
             return Ok(organizations);
+        }
+
+        /// <summary>
+        ///     Admin: Gets all organizations for admin.
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("/api/admin/[controller]")]
+        [Authorize(Roles = nameof(Roles.Admin))]
+        public async Task<IActionResult> GetAllForAdminAsync([FromQuery] AdminOrganListRequest request)
+        {
+            var requestDto = request.ToAdminOrganListRequestDto();
+            var result = await organizationService.GetAllForAdminAsync(requestDto);
+            return Ok(result);
         }
 
         /// <summary>
@@ -63,21 +78,6 @@ namespace TalkingTails.API.Controllers
         }
 
         /// <summary>
-        ///     Admin: Gets all organizations for admin.
-        /// </summary>
-        /// <param name="request"></param>
-        /// <returns></returns>
-        [HttpGet]
-        [Route("/api/admin/[controller]")]
-        [Authorize(Roles = nameof(Roles.Admin))]
-        public async Task<IActionResult> GetAllForAdminAsync([FromQuery] AdminOrganListRequest request)
-        {
-            var requestDto = request.ToAdminOrganListRequestDto();
-            var result = await organizationService.GetAllForAdminAsync(requestDto);
-            return Ok(result);
-        }
-
-        /// <summary>
         ///     Admin: Get details of an organization by id
         /// </summary>
         /// <param name="id"></param>
@@ -102,6 +102,22 @@ namespace TalkingTails.API.Controllers
         {
             var count = await organizationService.GetOrganizationCountAsync();
             return Ok(count);
+        }
+
+        /// <summary>
+        ///     Admin: Update the status of an organization.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpPatch("{id}/status")]
+        [Authorize(Roles = nameof(Roles.Admin))]
+        public async Task<IActionResult> UpdateStatusAsync(string id, [FromBody] UpdateStatusRequest request)
+        {
+            var result = await organizationService.UpdateStatusAsync(id, request.Status);
+            return result
+                ? Ok(new { Message = "Cập nhật trạng thái tổ chức thành công." })
+                : Problem(new InvalidResourcesError());
         }
     }
 }

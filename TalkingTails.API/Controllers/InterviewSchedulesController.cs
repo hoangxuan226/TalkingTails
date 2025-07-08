@@ -21,7 +21,8 @@ namespace TalkingTails.API.Controllers
         [Authorize(Roles = nameof(Roles.Organization))]
         public async Task<IActionResult> GetInterviewSchedulesAsync([FromQuery] InterviewListRequest request)
         {
-            var requestDto = request.ToInterviewListRequestDto();
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "";
+            var requestDto = request.ToInterviewListRequestDto(userId);
             var interviews = await interviewScheduleService.GetOrganInterviewSchedulesAsync(requestDto);
             return Ok(interviews);
         }

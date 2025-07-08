@@ -37,7 +37,8 @@ namespace TalkingTails.Business.Services
                 requestDto.SearchByName == null ? null : (requestDto.SearchByName, nameof(Pet.PetName));
             Expression<Func<Pet, bool>> filter = p =>
                 (requestDto.FilterBySpecies == null || p.Species.Equals(requestDto.FilterBySpecies)) &&
-                p.Status.Equals(PetStatus.Available);
+                (p.Status.Equals(PetStatus.Available)) &&
+                (p.Organization.Organization!.Status.Equals(OrganizationStatus.Active));
             return unitOfWork.GenericRepository<Pet>().GetPaginationAsync<PetBasicDto>(pageIndex, pageSize,
                 vietnameseSearch, filter);
         }

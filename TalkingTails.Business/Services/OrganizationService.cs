@@ -19,7 +19,7 @@ namespace TalkingTails.Business.Services
         IDateTimeProvider dateTimeProvider)
         : IOrganizationService
     {
-        public Task<List<OrganizationBasicDto>> GetAllAsync()
+        public Task<List<OrganizationBasicDto>> GetAllForGuestAsync()
         {
             var repository = (IApplicationUserRepository)unitOfWork.GenericRepository<ApplicationUser>();
             repository.ApplyRole(Roles.Organization);
@@ -188,6 +188,13 @@ namespace TalkingTails.Business.Services
             {
                 StatusCount = result
             };
+        }
+
+        public async Task<bool> UpdateStatusAsync(string id, OrganizationStatus status)
+        {
+            var result = await unitOfWork.GenericRepository<ApplicationUser>().ExecuteUpdateAsync(u => u.Id == id,
+                update => update.SetProperty(u => u.Organization!.Status, status));
+            return result > 0;
         }
     }
 }
