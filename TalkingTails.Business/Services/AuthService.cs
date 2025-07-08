@@ -1,4 +1,5 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
+using System.Net;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
@@ -21,7 +22,8 @@ namespace TalkingTails.Business.Services
         IDateTimeProvider dateTimeProvider,
         UserManager<ApplicationUser> userManager,
         SignInManager<ApplicationUser> signInManager,
-        IUnitOfWork unitOfWork
+        IUnitOfWork unitOfWork,
+        IEmailService emailService
     ) : IAuthService
     {
         public async Task<OneOf<AuthDto, IError>> RegisterAsync(
@@ -146,6 +148,83 @@ namespace TalkingTails.Business.Services
             await unitOfWork.SaveChangesAsync();
             return true;
         }
+
+        public async Task<OneOf<bool, IError>> ForgotPasswordAsync(string email)
+        {
+            try
+            {
+                var user = await userManager.FindByEmailAsync(email);
+                if (user == null)
+                {
+                    // Return success even if user doesn't exist (security best practice)
+                    return true;
+                }
+
+                // Generate password reset token
+                // Default expiration is 1 hour because of AddDefaultTokenProviders
+                var resetToken = await userManager.GeneratePasswordResetTokenAsync(user);
+
+                // Send email
+                await emailService.SendPasswordResetEmailAsync(
+                    user.Email!,
+                    resetToken,
+                    user.Name ?? "User");
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                return new Error
+                {
+                    StatusCode = HttpStatusCode.InternalServerError,
+                    Detail = "Đã xảy ra lỗi khi gửi email đặt lại mật khẩu.",
+                    Errors = new Dictionary<string, string[]>
+                    {
+                        { "Exception", [ex.Message] }
+                    }
+                };
+            }
+        }
+
+        public async Task<OneOf<bool, IError>> ResetPasswordAsync(ResetPasswordRequestDto requestDto)
+        {
+            try
+            {
+                var user = await userManager.FindByEmailAsync(requestDto.Email);
+                if (user == null)
+                {
+                    return new InvalidResourcesError
+                    {
+                        Detail = "Không tìm thấy người dùng với email này."
+                    };
+                }
+
+                var result = await userManager.ResetPasswordAsync(user, requestDto.Token, requestDto.NewPassword);
+                if (!result.Succeeded)
+                {
+                    return new InvalidIdentityError(result.Errors);
+                }
+
+                // Update user's UpdatedAt timestamp
+                user.UpdatedAt = dateTimeProvider.UtcNow;
+                await userManager.UpdateAsync(user);
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                return new Error
+                {
+                    StatusCode = HttpStatusCode.InternalServerError,
+                    Detail = "Đã xảy ra lỗi khi đặt lại mật khẩu.",
+                    Errors = new Dictionary<string, string[]>
+                    {
+                        { "Exception", [ex.Message] }
+                    }
+                };
+            }
+        }
+
 
         private string GenerateJwtToken(ApplicationUser user, IList<string>? roles)
         {

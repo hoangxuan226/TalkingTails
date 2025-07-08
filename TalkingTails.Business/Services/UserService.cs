@@ -1,5 +1,6 @@
 ﻿using System.Linq.Expressions;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using OneOf;
 using TalkingTails.Business.Errors;
@@ -16,7 +17,8 @@ namespace TalkingTails.Business.Services
     public class UserService(
         UserManager<ApplicationUser> userManager,
         IUnitOfWork unitOfWork,
-        IDateTimeProvider dateTimeProvider) : IUserService
+        IDateTimeProvider dateTimeProvider,
+        IFileService fileService) : IUserService
     {
         public async Task<dynamic?> GetAccountDetailsAsync(ClaimsPrincipal user)
         {
@@ -105,6 +107,51 @@ namespace TalkingTails.Business.Services
             repository.ApplyRole(Roles.Customer);
             return unitOfWork.GenericRepository<ApplicationUser>()
                 .GetAsync<CustomerDetailsDto>(u => u.Id.Equals(userId));
+        }
+
+        public async Task<OneOf<bool, IError>> UpdateAvatarAsync(string userId, IFormFile avatar)
+        {
+            try
+            {
+                var user = await userManager.FindByIdAsync(userId);
+                if (user == null)
+                {
+                    return new NotFoundError();
+                }
+
+                var newImageUrl = await fileService.UploadAsync(avatar);
+                var oldImageUrl = user.ProfileImage;
+
+                user.ProfileImage = newImageUrl;
+                user.UpdatedAt = dateTimeProvider.UtcNow;
+                var result = await userManager.UpdateAsync(user);
+
+                if (!result.Succeeded)
+                {
+                    // Database update failed - clean up the uploaded image
+                    await fileService.DeleteAsync(newImageUrl);
+                    return new InvalidIdentityError(result.Errors);
+                }
+
+                if (!string.IsNullOrEmpty(oldImageUrl))
+                {
+                    await fileService.DeleteAsync(oldImageUrl);
+                }
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                return new Error
+                {
+                    StatusCode = System.Net.HttpStatusCode.InternalServerError,
+                    Detail = "Đã xảy ra lỗi khi thay đổi ảnh đại diện.",
+                    Errors = new Dictionary<string, string[]>
+                    {
+                        { "Exception", [ex.Message] }
+                    }
+                };
+            }
         }
     }
 }

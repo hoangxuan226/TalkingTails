@@ -11,8 +11,11 @@ namespace TalkingTails.Business.Interfaces
             ApplicationUser user,
             string password
         );
+
         Task<OneOf<AuthDto, IError>> LoginAsync(string email, string password);
         Task<OneOf<AuthDto, IError>> RefreshTokenAsync(string refreshToken);
         Task<OneOf<bool, IError>> RevokeRefreshTokenAsync(string refreshToken);
+        Task<OneOf<bool, IError>> ForgotPasswordAsync(string email);
+        Task<OneOf<bool, IError>> ResetPasswordAsync(ResetPasswordRequestDto requestDto);
     }
 }

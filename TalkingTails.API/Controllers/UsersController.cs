@@ -32,6 +32,23 @@ namespace TalkingTails.API.Controllers
         }
 
         /// <summary>
+        ///     Update avatar for the authenticated user
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpPatch("me/avatar")]
+        [Authorize]
+        public async Task<IActionResult> UpdateAvatarAsync([FromForm] UpdateAvatarRequest request)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "";
+            var result = await userService.UpdateAvatarAsync(userId, request.Avatar);
+            return result.Match<IActionResult>(
+                _ => Ok(new { Message = "Ảnh đại diện được cập nhật thành công." }),
+                Problem
+            );
+        }
+
+        /// <summary>
         ///     Customer: Update customer profile
         /// </summary>
         /// <param name="request"></param>

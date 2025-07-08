@@ -27,5 +27,15 @@ namespace TalkingTails.API.Helpers.Mappings
                 Name = request.Email
             };
         }
+
+        public static ResetPasswordRequestDto ToResetPasswordRequestDto(this ResetPasswordRequest request)
+        {
+            return new ResetPasswordRequestDto
+            {
+                Email = request.Email,
+                Token = request.Token,
+                NewPassword = request.NewPassword
+            };
+        }
     }
 }

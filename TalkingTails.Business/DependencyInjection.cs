@@ -29,8 +29,14 @@ namespace TalkingTails.Business
                 payOsSettings.ApiKey, payOsSettings.ChecksumKey);
             services.AddSingleton(payOs);
 
-            // Add other services
+            // Add JWT settings
             services.Configure<JwtSettings>(config.GetSection(JwtSettings.SectionName));
+
+            // Add Email settings
+            services.Configure<EmailSettings>(config.GetSection(EmailSettings.SectionName));
+            services.AddScoped<IEmailService, EmailService>();
+
+            // Add other services
             services.AddSingleton<IDateTimeProvider, DateTimeProvider>();
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IFileService, FileService>();

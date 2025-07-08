@@ -83,6 +83,27 @@ namespace TalkingTails.API.Controllers
             );
         }
 
+        [HttpPost("forgot-password")]
+        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest request)
+        {
+            var result = await authService.ForgotPasswordAsync(request.Email);
+            return result.Match<IActionResult>(
+                _ => Ok(new { message = "Chúng tôi đã gửi liên kết đặt lại mật khẩu." }),
+                Problem
+            );
+        }
+
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request)
+        {
+            var requestDto = request.ToResetPasswordRequestDto();
+            var result = await authService.ResetPasswordAsync(requestDto);
+            return result.Match<IActionResult>(
+                _ => Ok(new { message = "Đặt lại mật khẩu thành công." }),
+                Problem
+            );
+        }
+
         private void SetRefreshTokenCookie(string refreshToken)
         {
             var cookieOptions = new CookieOptions
@@ -91,7 +112,8 @@ namespace TalkingTails.API.Controllers
                 Secure = true, // Only send over HTTPS
                 //SameSite = SameSiteMode.Strict, // Prevent CSRF
                 SameSite = SameSiteMode.None, // Allow cross-site cookies
-                Expires = DateTime.UtcNow.AddMinutes(jwtOptions.Value.RefreshTokenExpireInMinutes) // Match refresh token expiration
+                Expires = DateTime.UtcNow.AddMinutes(jwtOptions.Value
+                    .RefreshTokenExpireInMinutes) // Match refresh token expiration
             };
             Response.Cookies.Append(CookieRefreshToken, refreshToken, cookieOptions);
         }
