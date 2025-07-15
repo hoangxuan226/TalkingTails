@@ -77,12 +77,14 @@ namespace TalkingTails.API
             // Add CORS
             builder.Services.AddCors(options =>
             {
+                var allowedOrigin = builder.Configuration["CORS_ALLOWED_ORIGIN"] ?? "http://localhost:5173";
+
                 options.AddPolicy(
                     "AllowReactApp",
                     corsPolicyBuilder =>
                     {
                         corsPolicyBuilder
-                            .WithOrigins("http://localhost:5173") // Adjust for your React app's URL
+                            .WithOrigins(allowedOrigin)
                             .AllowAnyHeader()
                             .AllowAnyMethod()
                             .AllowCredentials(); // Required for cookies (refresh token)
