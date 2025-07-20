@@ -15,17 +15,17 @@ namespace TalkingTails.API.Controllers
     public class DonationsController(IDonationService donationService) : ApiController
     {
         /// <summary>
-        ///     Customer: Creates a checkout URL (QR code) for donations.
+        ///     Creates a checkout URL (QR code) for donations.
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
         [HttpPost("create-checkout")]
-        [Authorize(Roles = nameof(Roles.Customer))]
+        [AllowAnonymous]
         public async Task<IActionResult> CreateCheckout([FromBody] CreateCheckoutRequest request)
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             var checkoutUrl = await donationService.CreateCheckoutUrl(
-                request.ToCreateCheckoutRequestDto(userId ?? string.Empty)
+                request.ToCreateCheckoutRequestDto(userId)
             );
             return checkoutUrl.Match<IActionResult>(
                 url => Ok(new { url }),

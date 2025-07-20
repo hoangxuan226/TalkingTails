@@ -9,7 +9,7 @@
         public string ReturnUrl { get; set; } = string.Empty;
         public string CancelUrl { get; set; } = string.Empty;
         public string CheckoutUrl { get; set; } = string.Empty;
-        public string UserId { get; set; }
+        public string? UserId { get; set; } // For anonymous donations, this can be null
         public string OrganizationId { get; set; }
         public string PackageName { get; set; } = string.Empty;
         public string Message { get; set; } = string.Empty;

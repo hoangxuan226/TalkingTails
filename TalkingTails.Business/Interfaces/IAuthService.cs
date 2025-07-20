@@ -17,5 +17,6 @@ namespace TalkingTails.Business.Interfaces
         Task<OneOf<bool, IError>> RevokeRefreshTokenAsync(string refreshToken);
         Task<OneOf<bool, IError>> ForgotPasswordAsync(string email);
         Task<OneOf<bool, IError>> ResetPasswordAsync(ResetPasswordRequestDto requestDto);
+        Task<OneOf<AuthDto, IError>> GoogleLoginAsync(string googleToken);
     }
 }

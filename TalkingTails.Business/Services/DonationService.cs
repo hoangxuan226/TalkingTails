@@ -28,13 +28,6 @@ namespace TalkingTails.Business.Services
 
         public async Task<OneOf<string, IError>> CreateCheckoutUrl(CreateCheckoutRequestDto checkoutRequest)
         {
-            // Validate the donor
-            var donor = await userManager.FindByIdAsync(checkoutRequest.DonorId);
-            if (donor == null || !await userManager.IsInRoleAsync(donor, nameof(Roles.Customer)))
-            {
-                return new InvalidResourcesError();
-            }
-
             // Validate the organization
             var organization = await userManager.FindByIdAsync(checkoutRequest.OrganizationId);
             if (organization == null || !await userManager.IsInRoleAsync(organization, nameof(Roles.Organization)))
@@ -57,7 +50,7 @@ namespace TalkingTails.Business.Services
                 .GetAsync(dlr =>
                     dlr.Amount == amount && dlr.ReturnUrl.Equals(checkoutRequest.ReturnUrl) &&
                     dlr.CancelUrl.Equals(checkoutRequest.CancelUrl) &&
-                    dlr.UserId.Equals(checkoutRequest.DonorId) &&
+                    dlr.UserId == checkoutRequest.DonorId &&
                     dlr.OrganizationId.Equals(checkoutRequest.OrganizationId) &&
                     dlr.Status.Equals(PayOsStatusPending));
             if (oldLink != null)
@@ -169,16 +162,19 @@ namespace TalkingTails.Business.Services
                         var organization = await userManager.FindByIdAsync(donationLinkRequest.OrganizationId);
                         if (organization != null)
                         {
-                            organization.Organization.TotalDonationAmount += donation.Amount;
+                            organization.Organization!.TotalDonationAmount += donation.Amount;
                             await userManager.UpdateAsync(organization);
                         }
 
                         // Increase donor's donation amount
-                        var donor = await userManager.FindByIdAsync(donationLinkRequest.UserId);
-                        if (donor != null)
+                        if (!string.IsNullOrEmpty(donationLinkRequest.UserId))
                         {
-                            donor.Customer.TotalDonatedAmount += donation.Amount;
-                            await userManager.UpdateAsync(donor);
+                            var donor = await userManager.FindByIdAsync(donationLinkRequest.UserId);
+                            if (donor != null)
+                            {
+                                donor.Customer!.TotalDonatedAmount += donation.Amount;
+                                await userManager.UpdateAsync(donor);
+                            }
                         }
                     }
                     else

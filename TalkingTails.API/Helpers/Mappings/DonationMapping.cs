@@ -6,7 +6,7 @@ namespace TalkingTails.API.Helpers.Mappings
     public static class DonationMapping
     {
         public static CreateCheckoutRequestDto ToCreateCheckoutRequestDto(this CreateCheckoutRequest request,
-            string donorId)
+            string? donorId)
         {
             return new CreateCheckoutRequestDto
             {

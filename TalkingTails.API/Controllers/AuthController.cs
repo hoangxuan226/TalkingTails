@@ -43,6 +43,20 @@ namespace TalkingTails.API.Controllers
             );
         }
 
+        [HttpPost("google-login")]
+        public async Task<IActionResult> GoogleLogin([FromBody] GoogleLoginRequest request)
+        {
+            var result = await authService.GoogleLoginAsync(request.GoogleToken);
+            return result.Match<IActionResult>(
+                authDto =>
+                {
+                    SetRefreshTokenCookie(authDto.RefreshToken); // Set refresh token in cookie
+                    return Ok(authDto.ToAuthResponse());
+                },
+                Problem
+            );
+        }
+
         [HttpPost("refresh")]
         public async Task<IActionResult> Refresh()
         {
