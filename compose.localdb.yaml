@@ -1,0 +1,33 @@
+# docker-compose.localdb.yml
+# Use for development with local database
+# Run: docker compose -f compose.yaml -f compose.localdb.yaml up --build -d
+# Watch: docker compose -f compose.yaml -f compose.localdb.yaml watch
+
+services:
+  api:
+    environment:
+      # override ConnectionStrings for localdb
+      - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=TalkingTails_dev;Username=postgres;Password=123456;IncludeErrorDetail=true
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    container_name: talkingtails-localdb
+    image: postgres:17-alpine
+    restart: always
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=TalkingTails_dev
+      - POSTGRES_PASSWORD=123456
+    expose:
+      - 5432
+    healthcheck:
+      test: ["CMD", "pg_isready"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  db-data:

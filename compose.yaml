@@ -1,0 +1,31 @@
+# docker-compose.dev.yml
+# Use for development
+# Run: docker compose up --build -d
+# Watch: docker compose watch
+
+services:
+  api:
+    image: talkingtails-api:dev
+    container_name: talkingtails-api-dev
+    build:
+      context: .
+      target: final
+    ports:
+      - 8080:8080
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_DETAILED_ERRORS=true
+      - Logging__LogLevel__Default=Information
+      - Logging__LogLevel__Microsoft.AspNetCore=Warning
+    develop:
+      watch:
+        - path: ./
+          action: rebuild
+          target: /app
+          ignore:
+            - bin/
+            - obj/
+            - .git/
+            - .vs/
+            - .vscode/
+            - "**/*.md"

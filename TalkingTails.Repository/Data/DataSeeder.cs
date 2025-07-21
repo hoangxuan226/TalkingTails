@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
+using Microsoft.EntityFrameworkCore;
 using TalkingTails.Repository.Constants;
 using TalkingTails.Repository.Entities;
 using TalkingTails.Repository.Interfaces;
@@ -10,9 +11,12 @@ namespace TalkingTails.Repository.Data
         RoleManager<IdentityRole> roleManager,
         UserManager<ApplicationUser> userManager,
         ILogger<DataSeeder> logger,
-        IUnitOfWork unitOfWork
+        IUnitOfWork unitOfWork,
+        ApplicationDbContext dbContext
     )
     {
+        public Task EnsureLastMigrationAsync() => dbContext.Database.MigrateAsync();
+
         public async Task SeedAsync()
         {
             #region Seeding Roles
