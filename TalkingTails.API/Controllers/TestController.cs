@@ -1,36 +1,32 @@
-﻿using System.Security.Claims;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TalkingTails.Business.Interfaces;
 
-// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-
 namespace TalkingTails.API.Controllers
 {
     [Route("api/[controller]")]
-    //[Authorize]
     [ApiController]
     public class TestController(IFileService fileService) : ControllerBase
     {
         private const string CookieRefreshToken = "RefreshToken";
 
         [HttpGet("ping")]
-        [Authorize]
-        //[Authorize]
         public IActionResult Ping()
         {
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "";
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "Anonymous";
             var roles = User.FindAll(ClaimTypes.Role).Select(claim => claim.Value).ToList();
             var refreshToken = Request.Cookies[CookieRefreshToken];
             return Ok(new
             {
                 UserId = userId,
                 Roles = roles,
-                RefreshToken = refreshToken
+                RefreshToken = refreshToken ?? "No refresh token"
             });
         }
 
         [HttpPost("upload-image")]
+        [Authorize]
         public async Task<IActionResult> UploadImage(IFormFile image)
         {
             if (image.Length == 0)
@@ -43,6 +39,7 @@ namespace TalkingTails.API.Controllers
         }
 
         [HttpDelete("delete-image")]
+        [Authorize]
         public async Task<IActionResult> DeleteImage(string imageUrl)
         {
             if (string.IsNullOrEmpty(imageUrl))
