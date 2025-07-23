@@ -362,3 +362,6 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 /TalkingTails.API/appsettings.json
+
+# MacOS file
+.DS_Store

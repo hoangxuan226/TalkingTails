@@ -128,9 +128,13 @@ namespace TalkingTails.API
             using (var scope = app.Services.CreateScope())
             {
                 var seeder = scope.ServiceProvider.GetRequiredService<DataSeeder>();
-                if (app.Environment.IsDevelopment())
+                try
                 {
                     await seeder.EnsureLastMigrationAsync();
+                }
+                catch (Exception ex)
+                {
+                    app.Logger.LogError(ex, "Failed to apply pending EF Core migrations on startup");
                 }
                 await seeder.SeedAsync();
             }
